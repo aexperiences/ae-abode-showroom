@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Listings · Inventory · Abode OS</title>
+<meta name="description" content="Abode OS — the operating system for a real estate brokerage. Powered by Accelerated Experiences LLC.">
+<link rel="icon" href="https://www.aexperiences.com/Abode_OS.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,500;9..144,600&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="abode.css">
+</head>
+<body>
+<script src="abode.js"></script>
+<script>
+(function () {
+  var A = window.Abode;
+  var c = A.mount({ active: "listings.html", crumb: "Listings · Inventory" });
+  var d = A.db();
+
+  c.appendChild(A.page(
+    "Listings · Inventory",
+    "MLS-fed listings normalized via RESO so they render uniformly across every agent site — status, days-on-market, " +
+    "and list price vs original. The reduction signal shows before a listing goes cold, not after.",
+    '<button class="btn green sm" id="consultBtn">Consult Listings</button>'
+  ));
+
+  var active = d.listings.filter(function (l) { return l.status === "Active"; });
+  var pending = d.listings.filter(function (l) { return l.status === "Pending"; });
+  var sold = d.listings.filter(function (l) { return l.status === "Sold"; });
+  var aging = active.filter(function (l) { return l.dom > 45; });
+
+  c.appendChild(A.card(
+    '<h2>Inventory at a glance</h2>' +
+    '<div class="card-sub">Every listing the brokerage is carrying, by status.</div>' +
+    '<div class="statrow">' +
+      A.stat("Active", String(active.length), A.money(active.reduce(function(s,l){return s+l.listPrice;},0)) + " list") +
+      A.stat("Pending", String(pending.length), "under contract") +
+      A.stat("Sold (YTD shown)", String(sold.length), A.money(sold.reduce(function(s,l){return s+l.listPrice;},0)) + " volume") +
+      A.stat("Aging past 45d", String(aging.length), aging.length ? "reduction candidates" : "all fresh", aging.length ? "watch" : "good") +
+    '</div>'
+  ));
+
+  function statusBand(s) {
+    return s === "Sold" ? "good" : s === "Pending" ? "watch" : s === "Active" ? "ghost" : s === "Coming Soon" ? "ghost" : "ghost";
+  }
+  var rows = d.listings.slice().sort(function (a, b) { return b.dom - a.dom; }).map(function (l) {
+    var reduced = l.listPrice < l.originalPrice;
+    var stale = l.status === "Active" && l.dom > 45;
+    return '<tr>' +
+      '<td><div class="t-main">' + A.esc(l.address) + '</div><div class="t-sub">' + A.esc(l.mls) + ' · ' + A.esc(l.agent) + '</div></td>' +
+      '<td>' + A.tag(l.status, statusBand(l.status)) + '</td>' +
+      '<td class="num">' + A.money(l.listPrice) +
+        (reduced ? '<div class="t-sub" style="color:var(--bad)">was ' + A.money(l.originalPrice) + '</div>' : '') + '</td>' +
+      '<td class="num">' + l.dom + ' d' + (stale ? ' <span class="tag bad">stale</span>' : '') + '</td>' +
+      '<td class="t-sub" style="max-width:260px">' + A.esc(l.note) + '</td>' +
+    '</tr>';
+  }).join("");
+
+  c.appendChild(A.card(
+    '<h2>The book — status, DOM, price vs list</h2>' +
+    '<div class="card-sub">Sorted by days-on-market. A price under the original flags a reduction already taken; ' +
+    '“stale” marks an active listing past a generic 45-day window.</div>' +
+    '<table><thead><tr><th>Property</th><th>Status</th><th class="num">List price</th><th class="num">DOM</th><th>Note</th></tr></thead>' +
+    '<tbody>' + rows + '</tbody></table>' +
+    '<div class="divider"></div>' +
+    '<div class="fence"><b>1802 Lakeview is 61 days out in the luxury band</b> and has already taken one reduction — the ' +
+    'call is a second cut. Pushing a new price to the MLS is a Fence and stages to the desk.</div>' +
+    A.srcNote("No national days-on-market target is asserted — the honest benchmark is your own local MLS median by " +
+              "price band. " + A.BENCH.dom.src)
+  ));
+
+  setTimeout(function () {
+    var cb = document.getElementById("consultBtn");
+    if (cb) cb.addEventListener("click", function () {
+      var r = A.consult("listings", "Which listing is stale and needs a reduction?");
+      A.toast(r.passed ? "Listings released at " + r.verdict.conf + "%." : "Listings held at " + r.verdict.conf + "%.", "ok");
+    });
+  }, 0);
+})();
+</script>
+</body>
+</html>

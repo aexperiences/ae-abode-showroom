@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>IT · System Health · Abode OS</title>
+<meta name="description" content="Abode OS — the operating system for a real estate brokerage. Powered by Accelerated Experiences LLC.">
+<link rel="icon" href="https://www.aexperiences.com/Abode_OS.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,500;9..144,600&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="abode.css">
+</head>
+<body>
+<script src="abode.js"></script>
+<script>
+(function () {
+  var A = window.Abode;
+  var c = A.mount({ active: "it.html", crumb: "IT · System Health" });
+  var d = A.db();
+
+  c.appendChild(A.page(
+    "IT · System Health",
+    "CLEAR / WATCH / INTERVENE on the systems a brokerage runs on — the IDX sites, the MLS/RESO feed, the dialer, " +
+    "e-sign, and the client & agent portal. A real outage or a PII breach escalates to a human immediately.",
+    '<button class="btn green sm" id="consultBtn">Consult IT</button>'
+  ));
+
+  function stateBand(s) { return s === "CLEAR" ? "good" : s === "WATCH" ? "watch" : "bad"; }
+  var rows = d.systems.map(function (s) {
+    return '<tr>' +
+      '<td><div class="t-main">' + A.esc(s.name) + '</div></td>' +
+      '<td>' + A.tag(s.state, stateBand(s.state)) + '</td>' +
+      '<td class="t-sub">' + A.esc(s.metric) + '</td>' +
+    '</tr>';
+  }).join("");
+  var watch = d.systems.filter(function (s) { return s.state !== "CLEAR"; });
+
+  c.appendChild(A.card(
+    '<h2>Service board</h2>' +
+    '<div class="card-sub">' + d.systems.length + ' services monitored, ' + watch.length + ' on WATCH, 0 on INTERVENE.</div>' +
+    '<table><thead><tr><th>Service</th><th>State</th><th>Signal</th></tr></thead><tbody>' + rows + '</tbody></table>' +
+    '<div class="divider"></div>' +
+    '<div class="fence brass"><b>The MLS/RESO feed is the one that shows.</b> A stale sync means listings and status ' +
+    'drift across every agent site at once — it\'s a WATCH now (provider throttling), not an outage. Nothing needs a ' +
+    'human INTERVENE yet.</div>'
+  ));
+
+  c.appendChild(A.card(
+    '<h2>Backups &amp; the one that pages a person</h2>' +
+    '<div class="card-sub">Two risks a brokerage can\'t hand-wave: the transaction archive and client PII.</div>' +
+    '<table><tbody>' +
+      '<tr><td>Transaction document archive</td><td class="num">' + A.tag("backed up · verified 04:12", "good") + '</td></tr>' +
+      '<tr><td>Client PII (CRM contacts, financials)</td><td class="num">' + A.tag("encrypted at rest", "good") + '</td></tr>' +
+      '<tr><td>IDX sites &amp; portal</td><td class="num">' + A.tag("reachable · 210ms", "good") + '</td></tr>' +
+    '</tbody></table>' +
+    '<div class="divider"></div>' +
+    '<div class="fence"><b>A true INTERVENE — an outage or a data breach — pages a human immediately, no gate.</b> ' +
+    'An unverified backup is not a backup; this one was verified, not assumed.</div>'
+  ));
+
+  setTimeout(function () {
+    var cb = document.getElementById("consultBtn");
+    if (cb) cb.addEventListener("click", function () {
+      var r = A.consult("it", "Is anything on the watch list?");
+      A.toast(r.passed ? "IT released at " + r.verdict.conf + "%." : "IT held at " + r.verdict.conf + "%.", "ok");
+    });
+  }, 0);
+})();
+</script>
+</body>
+</html>

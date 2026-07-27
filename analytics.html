@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Brokerage Analytics · Abode OS</title>
+<meta name="description" content="Abode OS — the operating system for a real estate brokerage. Powered by Accelerated Experiences LLC.">
+<link rel="icon" href="https://www.aexperiences.com/Abode_OS.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,500;9..144,600&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="abode.css">
+</head>
+<body>
+<script src="abode.js"></script>
+<script>
+(function () {
+  var A = window.Abode;
+  var c = A.mount({ active: "analytics.html", crumb: "Brokerage Analytics" });
+  var d = A.db();
+
+  c.appendChild(A.page(
+    "Brokerage Analytics",
+    "Company dollar, pending vs closed volume, and per-agent production — computed live off the deals. This is the " +
+    "managing-broker and Broker-Owner scope; an agent sees only their own row.",
+    '<button class="btn green sm" id="consultBtn">Consult Analytics</button>'
+  ));
+
+  var t = A.commissionTotals(d);
+  c.appendChild(A.card(
+    '<h2>Volume board</h2>' +
+    '<div class="card-sub">The firm\'s throughput and what it converted to company dollar.</div>' +
+    '<div class="statrow">' +
+      A.stat("Closed volume", A.money(A.closedVolume(d)), A.unitsClosed(d) + " units", "good") +
+      A.stat("Pending volume", A.money(A.pendingVolume(d)), A.unitsPending(d) + " under contract", "watch") +
+      A.stat("Company Dollar", A.money(t.companyDollar), "kept YTD", "good headline") +
+      A.stat("Avg sale price", A.money(A.avgSalePrice(d)), "closed") +
+    '</div>'
+  ));
+
+  var prod = A.production(d);
+  var maxVol = Math.max.apply(null, prod.map(function (p) { return p.volume; }).concat([1]));
+  var totalClosed = A.closedVolume(d);
+  var rows = prod.map(function (p) {
+    var conc = totalClosed ? p.volume / totalClosed * 100 : 0;
+    return '<tr>' +
+      '<td><div class="t-main">' + A.esc(p.name) + '</div><div class="t-sub">' + A.esc(p.role) + (p.capped ? ' · capped' : '') + '</div></td>' +
+      '<td class="num">' + p.deals + '</td>' +
+      '<td class="num">' + A.money(p.volume) + A.bar(p.volume / maxVol * 100) + '</td>' +
+      '<td class="num">' + A.money(p.gci) + '</td>' +
+      '<td class="num"><b style="color:var(--green-2)">' + A.money(p.companyDollar) + '</b></td>' +
+      '<td class="num">' + conc.toFixed(0) + '%</td>' +
+    '</tr>';
+  }).join("");
+
+  var top = prod[0];
+  var concentration = totalClosed && top ? top.volume / totalClosed * 100 : 0;
+
+  c.appendChild(A.card(
+    '<h2>Per-agent production</h2>' +
+    '<div class="card-sub">Volume, GCI and the company dollar each agent generated — and their share of total closed ' +
+    'volume, so concentration risk is visible.</div>' +
+    '<table><thead><tr><th>Agent</th><th class="num">Units</th><th class="num">Volume</th><th class="num">GCI</th>' +
+    '<th class="num">Company $</th><th class="num">% of firm</th></tr></thead><tbody>' + rows + '</tbody></table>' +
+    '<div class="divider"></div>' +
+    '<div class="fence"><b>Concentration risk:</b> ' + (top ? A.esc(top.name) : "the top producer") + ' alone is ' +
+    concentration.toFixed(0) + '% of closed volume. One agent leaving would move the whole firm — worth naming to the ' +
+    'Broker-Owner. <span class="est">MODEL READ</span></div>' +
+    A.srcNote("Concentration and next-month pending are snapshots off current data, not forecasts. A fall-through or a " +
+              "compliance block can pull pending — tagged estimate, not a promise. No external target band is asserted.")
+  ));
+
+  /* honest context */
+  c.appendChild(A.card(
+    '<h2>Context behind the board</h2>' +
+    '<div class="card-sub">Genuinely-sourced facts, tagged and caveated — never a fabricated stat.</div>' +
+    '<table><thead><tr><th>Fact</th><th>Why it matters</th></tr></thead><tbody>' +
+    A.CONTEXT.map(function (x) {
+      return '<tr><td><div class="t-main">' + A.esc(x.stat) + '</div><div class="t-sub">' + A.esc(x.src) + '</div></td>' +
+        '<td>' + A.esc(x.claim) + '</td></tr>';
+    }).join("") + '</tbody></table>'
+  ));
+
+  setTimeout(function () {
+    var cb = document.getElementById("consultBtn");
+    if (cb) cb.addEventListener("click", function () {
+      var r = A.consult("analytics", "How concentrated is our volume?");
+      A.toast(r.passed ? "Analytics released at " + r.verdict.conf + "%." : "Analytics held at " + r.verdict.conf + "%.", "ok");
+    });
+  }, 0);
+})();
+</script>
+</body>
+</html>

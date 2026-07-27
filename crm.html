@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CRM · Pipelines · Abode OS</title>
+<meta name="description" content="Abode OS — the operating system for a real estate brokerage. Powered by Accelerated Experiences LLC.">
+<link rel="icon" href="https://www.aexperiences.com/Abode_OS.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,500;9..144,600&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="abode.css">
+</head>
+<body>
+<script src="abode.js"></script>
+<script>
+(function () {
+  var A = window.Abode;
+  var c = A.mount({ active: "crm.html", crumb: "CRM · Pipelines" });
+  var d = A.db();
+
+  c.appendChild(A.page(
+    "CRM · Pipelines",
+    "Behavior-scored smart lists, an omnichannel dialer/SMS/email, and a property-matching engine that auto-matches " +
+    "new MLS listings to each buyer's saved search. Comms run on Twilio and Google/Microsoft in production — " +
+    "simulated here.",
+    '<button class="btn green sm" id="consultBtn">Consult CRM</button>'
+  ));
+
+  /* smart list — prioritized by behavior */
+  var scored = d.contacts.slice().sort(function (a, b) {
+    var rank = { Hot:4, Active:3, Warm:2, New:1, Nurture:1, Watch:0 };
+    return (rank[b.stage]||0) - (rank[a.stage]||0);
+  });
+  var rows = scored.map(function (ct) {
+    var band = ct.stage === "Hot" || ct.stage === "Active" ? "good" : (ct.stage === "Warm" ? "watch" : "ghost");
+    return '<tr>' +
+      '<td><div class="t-main">' + A.esc(ct.name) + '</div><div class="t-sub">' + A.esc(ct.agent) + '</div></td>' +
+      '<td>' + A.tag(ct.type, "ghost") + '</td>' +
+      '<td>' + A.tag(ct.stage, band) + '</td>' +
+      '<td class="t-sub" style="max-width:300px">' + A.esc(ct.activity) + '</td>' +
+      '<td>' + (ct.likely != null
+        ? '<b>' + ct.likely + '</b><span class="est">MODEL EST.</span>'
+        : '<span class="muted small">— buyer</span>') + '</td>' +
+    '</tr>';
+  }).join("");
+
+  c.appendChild(A.card(
+    '<h2>Smart list — prioritized by behavior</h2>' +
+    '<div class="card-sub">The AI list surfaces contacts by what they actually did — repeat views, valuation runs, ' +
+    'CMA clicks — ahead of cold leads. A buyer viewing one home five times outranks a name that never opened an email.</div>' +
+    '<table><thead><tr><th>Contact</th><th>Type</th><th>Stage</th><th>Behavior signal</th><th>Likely to list</th></tr></thead>' +
+    '<tbody>' + rows + '</tbody></table>' +
+    '<div class="divider"></div>' +
+    '<div class="fence brass"><b>“Likely to List” is a MODEL ESTIMATE, never a fact.</b> It scores tenure, equity and ' +
+    'life-event signals to prioritize outreach — it does not know anyone is selling. Tagged as an assumption ' +
+    'everywhere it appears, and it can be wrong.</div>'
+  ));
+
+  /* property matching */
+  var buyers = d.contacts.filter(function (ct) { return ct.type === "Buyer"; });
+  var newInv = d.listings.filter(function (l) { return l.status === "Active" || l.status === "Coming Soon"; });
+  c.appendChild(A.card(
+    '<h2>Property-matching engine</h2>' +
+    '<div class="card-sub">New MLS inventory auto-matched to each active buyer\'s saved search — so an agent reaches ' +
+    'out the moment the right listing goes live, not a week later.</div>' +
+    '<table><thead><tr><th>Buyer</th><th>Saved search / signal</th><th>New matches to surface</th></tr></thead><tbody>' +
+    buyers.map(function (b) {
+      var match = newInv.slice(0, 2).map(function (l) { return l.address.split(",")[0]; }).join(", ");
+      return '<tr><td><div class="t-main">' + A.esc(b.name) + '</div><div class="t-sub">' + A.esc(b.agent) + '</div></td>' +
+        '<td class="t-sub">' + A.esc(b.signals) + '</td>' +
+        '<td>' + A.esc(match || "—") + '</td></tr>';
+    }).join("") + '</tbody></table>'
+  ));
+
+  /* omnichannel */
+  c.appendChild(A.card(
+    '<h2>Omnichannel comms <span class="tag watch mono">GHOST MODE</span></h2>' +
+    '<div class="card-sub">Integrated dialer, two-way SMS and email sequences — the native replacement for a stack of ' +
+    'separate tools.</div>' +
+    '<div class="grid g3">' +
+      '<div class="fence"><b>Dialer</b><br>Click-to-call with recording. Queue empty. <span class="muted">Placing a call reaches a person — staged.</span></div>' +
+      '<div class="fence"><b>Two-way SMS</b><br>A2P registered. <span class="muted">A send is a Fence — staged to the desk.</span></div>' +
+      '<div class="fence"><b>Email sequences</b><br>Drip built, not running. <span class="muted">A blast to a sphere stages to the desk.</span></div>' +
+    '</div>' +
+    A.srcNote("Twilio powers the dialer, call recording and SMS/MMS in production; Google Workspace / Microsoft 365 " +
+              "sync email, contacts and calendar. Nothing sends from the showroom.")
+  ));
+
+  setTimeout(function () {
+    var cb = document.getElementById("consultBtn");
+    if (cb) cb.addEventListener("click", function () {
+      var r = A.consult("crm", "Which contact should we call today?");
+      A.toast(r.passed ? "CRM released at " + r.verdict.conf + "%." : "CRM held at " + r.verdict.conf + "%.", "ok");
+    });
+  }, 0);
+})();
+</script>
+</body>
+</html>

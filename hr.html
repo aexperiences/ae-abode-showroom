@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>HR · People Ops · Abode OS</title>
+<meta name="description" content="Abode OS — the operating system for a real estate brokerage. Powered by Accelerated Experiences LLC.">
+<link rel="icon" href="https://www.aexperiences.com/Abode_OS.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,500;9..144,600&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="abode.css">
+</head>
+<body>
+<script src="abode.js"></script>
+<script>
+(function () {
+  var A = window.Abode;
+  var c = A.mount({ active: "hr.html", crumb: "HR · People Ops" });
+  var d = A.db();
+
+  c.appendChild(A.page(
+    "HR · People Ops",
+    "Roster, onboarding, and — the real-estate-specific gate — license and CE expiry tracking. A lapsed license is a " +
+    "stop-work event: an agent can't be paid a commission they aren't licensed to earn. AI seats and human seats sit " +
+    "side by side.",
+    '<button class="btn green sm" id="consultBtn">Consult HR</button>'
+  ));
+
+  function licenseBand(lic) {
+    if (!lic) return "ghost";
+    return lic.indexOf("2026") >= 0 ? "bad" : "good";
+  }
+  var rows = d.agents.map(function (a) {
+    return '<tr>' +
+      '<td><div class="t-main">' + A.esc(a.name) + '</div><div class="t-sub">' + A.esc(a.role) + '</div></td>' +
+      '<td>' + A.tag(a.type, "ghost") + '</td>' +
+      '<td>' + A.tag(a.status, a.status === "Active" ? "good" : "watch") + '</td>' +
+      '<td class="k">' + A.esc(a.license) + '</td>' +
+      '<td>' + A.tag(licenseBand(a.license) === "bad" ? "renews this year" : "current", licenseBand(a.license)) + '</td>' +
+      '<td class="t-sub">' + A.esc(a.ce) + '</td>' +
+    '</tr>';
+  }).join("");
+  /* the AI seats — shown as part of the org */
+  var aiRows = [A.SEATS.coo].concat(A.SEATS.depts.map(function (dp) { return { name:dp.dh.name, role:dp.name + " · DH" }; }))
+    .map(function (s) {
+      return '<tr><td><div class="t-main">' + A.esc(s.name) + '</div><div class="t-sub">' + A.esc(s.role) + '</div></td>' +
+        '<td>' + A.tag("AI · DeepSeek", "ghost") + '</td><td>' + A.tag("Active", "good") + '</td>' +
+        '<td class="k">—</td><td>' + A.tag("n/a", "ghost") + '</td><td class="t-sub">—</td></tr>';
+    }).join("");
+
+  c.appendChild(A.card(
+    '<h2>The roster — human seats</h2>' +
+    '<div class="card-sub">License number and expiry are tracked as a hard gate, not a reminder. One agent is inside ' +
+    'the danger window.</div>' +
+    '<table><thead><tr><th>Person</th><th>Type</th><th>Status</th><th>License</th><th>Expiry</th><th>CE</th></tr></thead>' +
+    '<tbody>' + rows + '</tbody></table>' +
+    '<div class="divider"></div>' +
+    '<div class="fence plum"><b>Sofia Ramos\' license renews in under 60 days and her CE is 3 hours short.</b> Book the ' +
+    'CE now — a closing scheduled under a lapsed license is a compliance and a payment problem, not an HR nicety.</div>'
+  ));
+
+  c.appendChild(A.card(
+    '<h2>The org — AI department seats</h2>' +
+    '<div class="card-sub">The department heads and the COO run on DeepSeek in production. They hold no license — they ' +
+    'route, gate and package; the licensed humans do the licensed work.</div>' +
+    '<table><thead><tr><th>Seat</th><th>Type</th><th>Status</th><th>License</th><th>Expiry</th><th>CE</th></tr></thead>' +
+    '<tbody>' + aiRows + '</tbody></table>'
+  ));
+
+  c.appendChild(A.card(
+    '<h2>People decisions &amp; the fence</h2>' +
+    '<div class="fence"><b>A termination is never auto-run.</b> HR can flag it, package the paperwork map and set the ' +
+    'follow-up — but the decision always routes to a human. So does anything that changes pay or classification.</div>'
+  ));
+
+  setTimeout(function () {
+    var cb = document.getElementById("consultBtn");
+    if (cb) cb.addEventListener("click", function () {
+      var r = A.consult("hr", "Is anyone's license about to lapse?");
+      A.toast(r.passed ? "HR released at " + r.verdict.conf + "%." : "HR held at " + r.verdict.conf + "%.", "ok");
+    });
+  }, 0);
+})();
+</script>
+</body>
+</html>

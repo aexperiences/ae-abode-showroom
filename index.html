@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Abode OS · Real Estate Brokerage OS</title>
+<meta name="description" content="Abode OS — the operating system for a real estate brokerage. Powered by Accelerated Experiences LLC.">
+<link rel="icon" href="https://www.aexperiences.com/Abode_OS.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,500;9..144,600&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="abode.css">
+</head>
+<body>
+
+<div class="gate-wrap">
+  <main style="width:100%;max-width:730px">
+
+    <section class="card" style="padding:34px 36px 0;border-radius:20px;box-shadow:var(--sh-lg);margin-bottom:0">
+
+      <!-- mark + wordmark -->
+      <div class="row" style="gap:13px;align-items:center">
+        <div class="bmark" style="width:46px;height:46px">
+          <img src="https://www.aexperiences.com/Abode_OS.png" alt="Abode OS"
+               style="width:100%;height:100%;object-fit:cover;border-radius:inherit;display:block"
+               onerror="this.style.display='none';this.parentNode.classList.add('fallback')">
+          <svg class="fallback-mark" viewBox="0 0 32 32" width="28" height="28" style="display:none" aria-hidden="true">
+            <g fill="none" stroke="#fff" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round">
+            <path d="M4 15 L16 5 L28 15"/><path d="M7 13 V27 H25 V13"/><path d="M13 27 V19 H19 V27"/></g>
+          </svg>
+        </div>
+        <div>
+          <div style="font-family:var(--serif);font-size:22px;font-weight:600;letter-spacing:-.01em;line-height:1.15">Abode OS</div>
+          <div class="muted mono" style="font-size:10px;letter-spacing:.14em;text-transform:uppercase;margin-top:2px">Real Estate Brokerage OS</div>
+        </div>
+        <span class="spacer"></span>
+        <span class="tag mono ghost">SHOWROOM</span>
+      </div>
+
+      <div class="divider" style="margin:22px 0 20px"></div>
+
+      <!-- the pitch -->
+      <h1 style="font-family:var(--serif);font-weight:600;font-size:29px;letter-spacing:-.01em;line-height:1.18">The whole brokerage,<br>running as one system.</h1>
+      <p style="font-size:14.5px;color:var(--ink-2);line-height:1.65;margin-top:14px;max-width:62ch">
+        Abode OS is the operating system for a real estate brokerage — lead gen and the IDX sites, a
+        behavior-scored CRM, MLS-fed listings, the transaction &amp; broker-compliance gate, the commission
+        money spine with splits and caps, analytics, recruiting, and a ten-department agent org routing
+        underneath all of it.
+      </p>
+
+      <div class="fence brass" style="margin-top:18px">
+        <b>Multi-tier by design.</b> An agent sees only their own book. A team lead sees the team. The managing
+        broker sees the whole firm's transactions, compliance log and financials. One system, three scopes —
+        no app-switching, and no tuition-style cut of your commissions.
+      </div>
+
+      <!-- what this actually is -->
+      <div class="fence" style="margin-top:14px">
+        <b>This is the real hub, not a slideshow.</b> It runs entirely in your browser. Everything you type stays
+        in this tab, nothing is uploaded, and the floor resets when you leave. Nothing here sends, spends,
+        publishes or moves money — anything that would is staged on the Approval Desk instead.
+      </div>
+
+      <!-- what's inside -->
+      <div style="margin-top:24px">
+        <label class="f">The departments inside</label>
+        <div class="row" style="gap:6px">
+          <span class="tag">Lead Gen &amp; Front Office</span>
+          <span class="tag">CRM &amp; Pipelines</span>
+          <span class="tag">Listings &amp; Inventory</span>
+          <span class="tag">Transactions &amp; Compliance</span>
+          <span class="tag">Commissions &amp; Accounting</span>
+          <span class="tag">Books &amp; Metrics</span>
+          <span class="tag">Brokerage Analytics</span>
+          <span class="tag">Recruiting &amp; Growth</span>
+          <span class="tag">HR · People Ops</span>
+          <span class="tag">IT · System Health</span>
+          <span class="tag">Law · Contracts &amp; Compliance</span>
+        </div>
+        <p class="muted small" style="margin-top:10px;line-height:1.55">
+          Each one is a five-seat chain — department head, administrative executive, pacemaker, and two opposing
+          lenses — gated on a confidence bar before anything is released. Harper, the COO, routes and packages;
+          she does not do the work.
+        </p>
+      </div>
+
+      <!-- the door -->
+      <div class="divider" style="margin:24px 0 20px"></div>
+      <div class="row" style="gap:14px">
+        <a class="btn green" href="dashboard.html" id="enter" style="padding:13px 24px;font-size:14px">
+          Enter the brokerage &rarr;
+        </a>
+        <span class="muted small" style="max-width:34ch;line-height:1.5">
+          Opens on the full Grandsuite build with every department switched on. Take any of them off from the
+          tier pill inside.
+        </span>
+      </div>
+
+      <!-- credit -->
+      <div class="ae-credit" style="margin:26px -36px 0;padding:16px 36px 22px">
+        Powered by <b>Accelerated Experiences LLC</b> · Abode OS is a white-label build.
+        Demo data is a fictional brokerage; benchmark figures are sourced or shown blank.
+      </div>
+
+    </section>
+
+  </main>
+</div>
+
+<script src="abode.js"></script>
+<script>
+(function () {
+  var A = window.Abode;
+  var a = document.getElementById("enter");
+  if (!a || !A) return;
+  a.addEventListener("click", function () { A.resetFloor(); });
+})();
+</script>
+</body>
+</html>

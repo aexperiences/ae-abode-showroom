@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Law · Contracts &amp; Compliance · Abode OS</title>
+<meta name="description" content="Abode OS — the operating system for a real estate brokerage. Powered by Accelerated Experiences LLC.">
+<link rel="icon" href="https://www.aexperiences.com/Abode_OS.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,500;9..144,600&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="abode.css">
+</head>
+<body>
+<script src="abode.js"></script>
+<script>
+(function () {
+  var A = window.Abode;
+  var c = A.mount({ active: "law.html", crumb: "Law · Contracts & Compliance" });
+  var d = A.db();
+
+  c.appendChild(A.page(
+    "Law · Contracts & Compliance",
+    "Advisory only — a hard fence to a real attorney. The desk reads RESPA, agency-disclosure and fair-housing risk on " +
+    "the brokerage's own activity, flags it, and cites the source. It never clears anything; a licensed attorney owns " +
+    "every sign-off.",
+    '<button class="btn green sm" id="consultBtn">Consult Law</button>'
+  ));
+
+  c.appendChild(A.card(
+    '<div class="fence plum"><b>This is not legal advice, and this desk is not a lawyer.</b> It is an advisory read that ' +
+    'catches exposure early and routes it to counsel. Its confidence bar is 85% and anything with real exposure ' +
+    'deliberately holds under it — that is the design, not a failure.</div>'
+  ));
+
+  function riskBand(r) { return r === "High" ? "bad" : r === "Medium" ? "watch" : "ghost"; }
+  var rows = d.matters.map(function (m) {
+    return '<tr>' +
+      '<td><div class="t-main">' + A.esc(m.title) + '</div><div class="t-sub">' + A.esc(m.ref) + '</div></td>' +
+      '<td>' + A.tag(m.risk + " risk", riskBand(m.risk)) + '</td>' +
+      '<td class="t-sub" style="max-width:420px">' + A.esc(m.note) + '</td>' +
+      '<td>' + A.tag("route to counsel", "watch") + '</td>' +
+    '</tr>';
+  }).join("");
+
+  c.appendChild(A.card(
+    '<h2>The docket</h2>' +
+    '<div class="card-sub">Real-estate-real matters the org watches. Every one is an advisory flag with its source ' +
+    'cited — not a clearance.</div>' +
+    '<table><thead><tr><th>Matter</th><th>Risk</th><th>Advisory read</th><th>Disposition</th></tr></thead>' +
+    '<tbody>' + rows + '</tbody></table>' +
+    '<div class="divider"></div>' +
+    '<div class="fence"><b>Two High-risk matters need an attorney before anything runs:</b> the lender co-marketing ' +
+    'cost-split (RESPA §8 kickback risk) and the “perfect for a young family” listing line (Fair Housing §804(c) ' +
+    'familial-status steering). Both stage as holds, not clearances.</div>'
+  ));
+
+  c.appendChild(A.card(
+    '<h2>The lines this desk watches</h2>' +
+    '<div class="card-sub">The compliance surface a brokerage actually gets caught on.</div>' +
+    '<table><thead><tr><th>Area</th><th>What the read looks for</th></tr></thead><tbody>' +
+      [['RESPA §8 / Reg X','Un-papered cost-splits or referral arrangements with lenders, title, or affiliated businesses — kickback exposure.'],
+       ['Fair Housing Act §804(c)','Protected-class or familial-status language in listings and ads — steering exposure sits in the words themselves.'],
+       ['Agency disclosure','The right, current form, fully executed and timed correctly — the doc that blocked 44 Mica Bay.'],
+       ['NAR settlement (Aug 2024)','Compensation not posted in the MLS; written buyer-agency agreements in place up front.'],
+       ['IC classification','Agents as independent contractors, not employees — clean agreements and no employee-style control.']]
+       .map(function (r) {
+         return '<tr><td class="t-main">' + A.esc(r[0]) + '</td><td class="t-sub">' + A.esc(r[1]) + '</td></tr>';
+       }).join("") +
+    '</tbody></table>' +
+    A.srcNote("RESPA/Reg X, Fair Housing Act, and the Aug-2024 NAR settlement are cited because they're real and public. " +
+              "The read is advisory; a licensed attorney owns every clearance.")
+  ));
+
+  setTimeout(function () {
+    var cb = document.getElementById("consultBtn");
+    if (cb) cb.addEventListener("click", function () {
+      var r = A.consult("law", "Which matters need a real attorney?");
+      A.toast(r.passed ? "Law released at " + r.verdict.conf + "%." :
+        "Law held at " + r.verdict.conf + "% (under the 85% bar) — routed to counsel by design.", "ok");
+    });
+  }, 0);
+})();
+</script>
+</body>
+</html>

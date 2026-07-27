@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Commissions · Accounting · Abode OS</title>
+<meta name="description" content="Abode OS — the operating system for a real estate brokerage. Powered by Accelerated Experiences LLC.">
+<link rel="icon" href="https://www.aexperiences.com/Abode_OS.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,500;9..144,600&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="abode.css">
+</head>
+<body>
+<script src="abode.js"></script>
+<script>
+(function () {
+  var A = window.Abode;
+  var c = A.mount({ active: "commissions.html", crumb: "Commissions · Accounting" });
+  var d = A.db();
+
+  c.appendChild(A.page(
+    "Commissions · Accounting",
+    "The money spine. GCI per deal, the split by tier and cap, the franchise fee, team splits, the Disbursement " +
+    "Authorization to title, and agent billing — all computed off the deals and the roster, not typed in.",
+    '<button class="btn green sm" id="consultBtn">Consult Accounting</button>'
+  ));
+
+  /* ---------------------------------------------------------- the board */
+  var t = A.commissionTotals(d);
+  c.appendChild(A.card(
+    '<h2>The book, by the numbers</h2>' +
+    '<div class="card-sub">Gross commission income is what came in the door. Company dollar is what the brokerage ' +
+    'actually kept after every split, cap credit and franchise fee. The gap is the agents\' share — the cost of the ' +
+    'roster.</div>' +
+    '<div class="statrow">' +
+      A.stat("Company Dollar", A.money(t.companyDollar), "Kept by the house · YTD closed", "good headline") +
+      A.stat("Gross commission income", A.money(t.gci), "All " + t.deals + " closed deals") +
+      A.stat("Company dollar %", A.pct(t.companyPct,1), "Company $ ÷ GCI", t.companyPct < 15 ? "watch" : "good") +
+      A.stat("Paid to agents", A.money(t.agentNet), "Agent splits after cap") +
+      A.stat("Franchise fees", A.money(t.franchise), "Off the top, capped per agent/yr") +
+    '</div>' +
+    A.srcNote("Every figure computed per deal via the split-and-cap engine. Franchise fee = 6% off the top capped at " +
+              "$3,000/agent/yr (a common franchise model); the house split flips to a flat transaction fee once an " +
+              "agent pays their cap. No figure here is hard-coded.")
+  ));
+
+  /* ---------------------------------------------------- per-deal breakdown */
+  var run = A.commissionRun(d);
+  var closed = d.deals.filter(function (x) { return x.status === "Closed"; });
+  var byName = {};
+  d.agents.forEach(function (a) { byName[a.name] = a; });
+  /* recompute per-deal in date order to show the cap fill honestly */
+  var walk = {};
+  d.agents.forEach(function (a) { walk[a.name] = { capPaid:Number(a.capPriorYTD)||0, frPaid:Number(a.franchisePriorYTD)||0 }; });
+  var dealRows = closed.slice().sort(function (a,b) { return String(a.closeDate).localeCompare(String(b.closeDate)); })
+    .map(function (x) {
+      var a = byName[x.agent] || {};
+      var st = walk[x.agent] || { capPaid:0, frPaid:0 };
+      var bd = A.dealBreakdown(x, a, st.capPaid, st.frPaid);
+      /* advance the walking cap the same way the engine does */
+      var companyBase = bd.companyBase;
+      var preCapHouse = Math.round(companyBase * (Number(a.splitHouse)||0));
+      if ((Number(a.cap)||0) > 0) {
+        var capRemain = Math.max(0, (Number(a.cap)||0) - st.capPaid);
+        st.capPaid += Math.min(preCapHouse, capRemain);
+      }
+      st.frPaid += bd.franchise;
+      return '<tr>' +
+        '<td class="k">' + A.esc(x.mls) + '</td>' +
+        '<td><div class="t-main">' + A.esc(x.address) + '</div><div class="t-sub">' + A.esc(x.agent) + ' · ' + A.esc(x.side) + (x.sides>1?" (both sides)":"") + '</div></td>' +
+        '<td class="num">' + A.money(x.price) + '<div class="t-sub">' + x.rate + '% × ' + x.sides + '</div></td>' +
+        '<td class="num">' + A.money(bd.gross) + '</td>' +
+        '<td class="num">' + (bd.franchise ? "−" + A.money(bd.franchise) : "—") + '</td>' +
+        '<td class="num"><b style="color:var(--green-2)">' + A.money(bd.companyDollar) + '</b>' +
+          (bd.capped ? '<div class="t-sub">capped · flat fee</div>' : bd.straddled ? '<div class="t-sub">hit cap here</div>' : '') + '</td>' +
+        '<td class="num">' + A.money(bd.agentNet) + (bd.toLead ? '<div class="t-sub">−' + A.money(bd.toLead) + ' to team</div>' : '') + '</td>' +
+      '</tr>';
+    }).join("");
+
+  c.appendChild(A.card(
+    '<h2>Every closed deal — the split, line by line</h2>' +
+    '<div class="card-sub">GCI, the franchise fee off the top, the company dollar the house kept, and what the agent ' +
+    'netted after their split (and any team split). Watch a deal straddle the cap and the house share collapse to a ' +
+    'flat fee.</div>' +
+    '<table><thead><tr><th>MLS</th><th>Property</th><th class="num">Price</th><th class="num">GCI</th>' +
+    '<th class="num">Franchise</th><th class="num">Company $</th><th class="num">Agent net</th></tr></thead>' +
+    '<tbody>' + dealRows + '</tbody></table>'
+  ));
+
+  /* ------------------------------------------ the live split calculator */
+  c.appendChild(A.card(
+    '<div class="between"><div>' +
+      '<h2>Commission split calculator</h2>' +
+      '<div class="card-sub">A live configurator. Change the inputs and the GCI, franchise fee, company dollar and ' +
+      'agent net recompute instantly — the same engine the deals above run through.</div>' +
+    '</div></div>' +
+    '<div class="grid g2">' +
+      '<div>' +
+        '<div class="field"><label class="f">Agent</label><select id="calcAgent"></select></div>' +
+        '<div class="grid g2">' +
+          '<div class="field"><label class="f">Sale price ($)</label><input id="calcPrice" type="number" value="600000"></div>' +
+          '<div class="field"><label class="f">Side rate (%)</label><input id="calcRate" type="number" step="0.1" value="3.0"></div>' +
+        '</div>' +
+        '<div class="grid g2">' +
+          '<div class="field"><label class="f">Sides represented</label><select id="calcSides"><option value="1">1 — one side</option><option value="2">2 — both sides (dual)</option></select></div>' +
+          '<div class="field"><label class="f">Cap paid to date ($)</label><input id="calcCapPaid" type="number" value="0"></div>' +
+        '</div>' +
+      '</div>' +
+      '<div><div id="calcOut"></div></div>' +
+    '</div>'
+  ));
+
+  /* ----------------------------------------------- DA generator */
+  c.appendChild(A.card(
+    '<div class="between"><div>' +
+      '<h2>Disbursement Authorization (DA) generator</h2>' +
+      '<div class="card-sub">The legal instruction to title/escrow to pay the brokerage and the agent at closing. ' +
+      'Generated from a cleared deal — but issuing it moves real money, so it stages to the Approval Desk. Never fired here.</div>' +
+    '</div></div>' +
+    '<div class="field" style="max-width:420px"><label class="f">Deal (clear-to-close only)</label><select id="daDeal"></select></div>' +
+    '<div id="daOut"></div>'
+  ));
+
+  /* ----------------------------------------------- agent billing */
+  var arRows = d.billing.map(function (b) {
+    var tot = (Number(b.deskFee)||0) + (Number(b.techFee)||0) + (Number(b.mktg)||0);
+    return '<tr>' +
+      '<td><div class="t-main">' + A.esc(b.agent) + '</div></td>' +
+      '<td class="num">' + A.money(b.deskFee) + '</td>' +
+      '<td class="num">' + A.money(b.techFee) + '</td>' +
+      '<td class="num">' + A.money(b.mktg) + '</td>' +
+      '<td class="num"><b>' + A.money(tot) + '</b></td>' +
+      '<td>' + A.tag(b.status, b.status === "Paid" ? "good" : (b.age > 30 ? "bad" : "watch")) +
+        (b.status === "Open" ? '<div class="t-sub">' + b.age + ' days</div>' : '') + '</td>' +
+    '</tr>';
+  }).join("");
+  c.appendChild(A.card(
+    '<h2>Agent billing — desk, tech &amp; marketing</h2>' +
+    '<div class="card-sub">Charge-backs owed by agents. This is receivable, not revenue — and one line is aging past 30 days.</div>' +
+    '<table><thead><tr><th>Agent</th><th class="num">Desk</th><th class="num">Tech</th><th class="num">Marketing</th>' +
+    '<th class="num">Owed</th><th>Status</th></tr></thead><tbody>' + arRows + '</tbody></table>' +
+    '<div class="divider"></div>' +
+    '<div class="fence"><b>' + A.money(A.deskFeeAR(d)) + ' in open desk-fee AR.</b> Chasing it is a follow-up the org ' +
+    'sets automatically; a reminder to an agent is an internal touch, but a fee waiver would be a Fence.</div>'
+  ));
+
+  /* ------------------------------------------------------------ wiring */
+  setTimeout(function () {
+    /* split calculator */
+    var sel = document.getElementById("calcAgent");
+    d.agents.forEach(function (a) {
+      var o = document.createElement("option"); o.value = a.name;
+      o.textContent = a.name + " — " + a.tier; sel.appendChild(o);
+    });
+    function calc() {
+      var a = A.SEED.agents.filter(function (x) { return x.name === sel.value; })[0] || d.agents[0];
+      var deal = { price: Number(document.getElementById("calcPrice").value) || 0,
+                   rate: Number(document.getElementById("calcRate").value) || 0,
+                   sides: Number(document.getElementById("calcSides").value) || 1 };
+      var capPaid = Number(document.getElementById("calcCapPaid").value) || 0;
+      var bd = A.dealBreakdown(deal, a, capPaid, a.franchisePriorYTD || 0);
+      document.getElementById("calcOut").innerHTML =
+        '<table>' +
+        '<tr><td>GCI (' + deal.rate + '% × ' + deal.sides + ' side' + (deal.sides>1?"s":"") + ')</td><td class="num"><b>' + A.money(bd.gross) + '</b></td></tr>' +
+        '<tr><td>Franchise fee (' + (a.franchisePct||0) + '% off the top, capped)</td><td class="num">−' + A.money(bd.franchise) + '</td></tr>' +
+        '<tr><td>Company base</td><td class="num">' + A.money(bd.companyBase) + '</td></tr>' +
+        '<tr><td><b>Company dollar</b> ' + (bd.capped ? A.tag("CAPPED — flat fee","good") : A.tag((a.splitHouse*100)+"% house split","ghost")) + '</td><td class="num"><b style="color:var(--green-2)">' + A.money(bd.companyDollar) + '</b></td></tr>' +
+        '<tr><td>Agent gross</td><td class="num">' + A.money(bd.agentGross) + '</td></tr>' +
+        (bd.toLead ? '<tr><td>Team split to lead (' + (a.teamSplit*100) + '%)</td><td class="num">−' + A.money(bd.toLead) + '</td></tr>' : '') +
+        '<tr><td><b>Agent net</b></td><td class="num"><b>' + A.money(bd.agentNet) + '</b></td></tr>' +
+        '</table>' +
+        (bd.capRemain !== null ? '<div class="srcnote">Cap remaining before this deal: ' + A.money(bd.capRemain) + '. ' +
+          (bd.capped ? 'Agent is capped — the house keeps only the flat transaction fee.' :
+           bd.straddled ? 'This deal fills the cap; the portion over it is at the post-cap rate.' :
+           'Still on the house split.') + '</div>' : '<div class="srcnote">Broker desk — no cap; straight ' + (a.splitHouse*100) + '% house split.</div>');
+    }
+    ["calcAgent","calcPrice","calcRate","calcSides","calcCapPaid"].forEach(function (id) {
+      document.getElementById(id).addEventListener("input", calc);
+    });
+    calc();
+
+    /* DA generator — only clear-to-close deals */
+    var daSel = document.getElementById("daDeal");
+    var clearDeals = d.deals.filter(function (x) { return x.status === "Clear to Close" || (x.status === "Closed"); });
+    clearDeals.forEach(function (x) {
+      var o = document.createElement("option"); o.value = x.mls;
+      o.textContent = x.mls + " — " + x.address + " (" + x.status + ")"; daSel.appendChild(o);
+    });
+    function da() {
+      var x = d.deals.filter(function (z) { return z.mls === daSel.value; })[0];
+      if (!x) { document.getElementById("daOut").innerHTML = ""; return; }
+      var a = A.SEED.agents.filter(function (z) { return z.name === x.agent; })[0] || {};
+      var run2 = A.commissionRun(d);
+      var priorCap = a ? (run2[a.name] ? run2[a.name].capPaid : 0) : 0;
+      var bd = A.dealBreakdown(x, a, 0, 0);
+      document.getElementById("daOut").innerHTML =
+        '<div class="fence brass" style="margin-bottom:12px"><b>Disbursement Authorization — DRAFT.</b> ' +
+        'For ' + A.esc(x.address) + ' (' + A.esc(x.mls) + '). To be transmitted to the closing title company at funding.</div>' +
+        '<table>' +
+        '<tr><td>Gross commission at closing</td><td class="num"><b>' + A.money(bd.gross) + '</b></td></tr>' +
+        '<tr><td>Franchise fee</td><td class="num">' + A.money(bd.franchise) + '</td></tr>' +
+        '<tr><td>To brokerage (company dollar)</td><td class="num"><b style="color:var(--green-2)">' + A.money(bd.companyDollar) + '</b></td></tr>' +
+        '<tr><td>To ' + A.esc(x.agent) + '</td><td class="num">' + A.money(bd.agentNet) + '</td></tr>' +
+        (bd.toLead ? '<tr><td>To Bell Group (team split)</td><td class="num">' + A.money(bd.toLead) + '</td></tr>' : '') +
+        '</table>' +
+        '<div class="divider"></div>' +
+        '<div class="row">' +
+          '<button class="btn green sm" id="stageDA">Stage DA to the Approval Desk</button>' +
+          '<span class="muted small">Issuing a DA moves real money to title. It is a Fence — this only files it for the Broker-Owner.</span>' +
+        '</div>';
+      document.getElementById("stageDA").addEventListener("click", function () {
+        A.stage("money", "Disbursement Authorization — " + x.address + " (" + x.mls + ")",
+          "To title: " + A.money(bd.companyDollar) + " company dollar, " + A.money(bd.agentNet) + " to " + x.agent + (bd.toLead ? ", " + A.money(bd.toLead) + " team split" : "") + ".",
+          "Authorizes real money movement to title/escrow at funding.",
+          "Split (Money AE)");
+        this.disabled = true; this.textContent = "Staged ✓";
+        A.toast("DA staged to the Approval Desk — no money moved. Ghost Mode.", "ok");
+      });
+    }
+    daSel.addEventListener("change", da);
+    da();
+
+    /* consult accounting */
+    var cb = document.getElementById("consultBtn");
+    if (cb) cb.addEventListener("click", function () {
+      var r = A.consult("money", "What is our company dollar and is the DA ready?");
+      A.toast(r.passed ? "Accounting released at " + r.verdict.conf + "%." :
+        "Accounting held at " + r.verdict.conf + "% (under the 85% bar) — a DA is a Fence. See the Agent Org page.", "ok");
+    });
+  }, 0);
+})();
+</script>
+</body>
+</html>

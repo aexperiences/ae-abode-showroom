@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Recruiting · Growth · Abode OS</title>
+<meta name="description" content="Abode OS — the operating system for a real estate brokerage. Powered by Accelerated Experiences LLC.">
+<link rel="icon" href="https://www.aexperiences.com/Abode_OS.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,500;9..144,600&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="abode.css">
+</head>
+<body>
+<script src="abode.js"></script>
+<script>
+(function () {
+  var A = window.Abode;
+  var c = A.mount({ active: "recruiting.html", crumb: "Recruiting · Growth" });
+  var d = A.db();
+
+  c.appendChild(A.page(
+    "Recruiting · Growth",
+    "A separate CRM for the outside agents the brokerage wants to hire, plus the onboarding portal that takes a new " +
+    "sign from offer to producing. Recruiting is how a brokerage grows company dollar without waiting on the market.",
+    '<button class="btn green sm" id="consultBtn">Consult Recruiting</button>'
+  ));
+
+  function stageBand(s) {
+    return /conversation/i.test(s) ? "good" : /sourced/i.test(s) ? "watch" : "ghost";
+  }
+  var rows = d.recruits.map(function (r) {
+    var isTarget = /target/i.test(r.stage);
+    return '<tr>' +
+      '<td><div class="t-main">' + A.esc(r.name) + '</div><div class="t-sub">from ' + A.esc(r.from) + '</div></td>' +
+      '<td>' + A.esc(r.production) + ' <span class="est">ROSTER EST.</span></td>' +
+      '<td>' + A.tag(r.stage, stageBand(r.stage)) + '</td>' +
+      '<td class="t-sub" style="max-width:260px">' + A.esc(r.note) + '</td>' +
+      '<td>' + (isTarget
+        ? '<button class="btn green sm" data-reach="' + r.id + '">Reach out</button>'
+        : '<span class="muted small">in motion</span>') + '</td>' +
+    '</tr>';
+  }).join("");
+
+  c.appendChild(A.card(
+    '<h2>Recruiting pipeline</h2>' +
+    '<div class="card-sub">Outside agents worth a look. Production figures are RealTrends / MLS-roster estimates — a ' +
+    'prioritizer, not a verified book. Contacting a named target reaches a real person, so it stages to the desk.</div>' +
+    '<table><thead><tr><th>Agent</th><th>Production</th><th>Stage</th><th>Note</th><th>Action</th></tr></thead>' +
+    '<tbody>' + rows + '</tbody></table>' +
+    '<div class="divider"></div>' +
+    '<div class="fence brass"><b>Every production number here is an estimate.</b> An assumed figure can\'t anchor a comp ' +
+    'package — verify before any offer. And reaching out to Devon Pryce is a Fence: the org sets the outreach, a human ' +
+    'sends it.</div>'
+  ));
+
+  /* onboarding portal */
+  var onboarding = d.agents.filter(function (a) { return a.status === "Onboarding"; });
+  c.appendChild(A.card(
+    '<h2>Onboarding portal</h2>' +
+    '<div class="card-sub">Digital training, asset delivery and tech provisioning for a new sign — the same checklist ' +
+    'HR reads for license and IC-agreement currency.</div>' +
+    (onboarding.length ? onboarding.map(function (a) {
+      return '<div class="fence"><b>' + A.esc(a.name) + '</b> — ' + A.esc(a.tier) + '<br>' +
+        '<span class="muted small">' + A.esc(a.note) + '</span></div>';
+    }).join('<div style="height:8px"></div>') : '<div class="empty">No one mid-onboarding right now.</div>') +
+    '<div class="divider"></div>' +
+    '<table><thead><tr><th>Onboarding step</th><th>State</th></tr></thead><tbody>' +
+      [['IC agreement signed','done'],['License verified in state system','done'],['MLS + lockbox provisioned','done'],
+       ['Email, IDX site & CRM seat created','done'],['E&O coverage confirmed','pending'],['New-agent training modules','60% complete']]
+       .map(function (r) {
+         var band = r[1] === 'done' ? 'good' : (r[1] === 'pending' ? 'watch' : 'ghost');
+         return '<tr><td>' + A.esc(r[0]) + '</td><td>' + A.tag(r[1], band) + '</td></tr>';
+       }).join("") +
+    '</tbody></table>'
+  ));
+
+  setTimeout(function () {
+    Array.prototype.forEach.call(document.querySelectorAll("[data-reach]"), function (b) {
+      b.addEventListener("click", function () {
+        var r = d.recruits.filter(function (z) { return z.id === this.dataset.reach; }.bind(this))[0];
+        A.stage("external", "Recruiting outreach — " + r.name + " (" + r.from + ")",
+          "First contact with a target producer. Production is a roster estimate, unverified.",
+          "Reaches a real named agent outside the firm.", "Scout (Recruiting DH)");
+        this.disabled = true; this.textContent = "Staged ✓";
+        A.toast("Outreach staged to the Approval Desk — nothing sent. Ghost Mode.", "ok");
+      });
+    });
+    var cb = document.getElementById("consultBtn");
+    if (cb) cb.addEventListener("click", function () {
+      var r = A.consult("recruiting", "Which recruit is worth the time?");
+      A.toast(r.passed ? "Recruiting released at " + r.verdict.conf + "%." : "Recruiting held at " + r.verdict.conf + "%.", "ok");
+    });
+  }, 0);
+})();
+</script>
+</body>
+</html>

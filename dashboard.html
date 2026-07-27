@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Command Center · Abode OS</title>
+<meta name="description" content="Abode OS — the operating system for a real estate brokerage. Powered by Accelerated Experiences LLC.">
+<link rel="icon" href="https://www.aexperiences.com/Abode_OS.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,500;9..144,600&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="abode.css">
+</head>
+<body>
+<script src="abode.js"></script>
+<script>
+(function () {
+  var A = window.Abode;
+  var c = A.mount({ active: "dashboard.html", crumb: "Command Center" });
+  var d = A.db();
+
+  /* ------------------------------------------------------------- page head */
+  c.appendChild(A.page(
+    "Command Center",
+    "The whole brokerage on one sheet — for the Broker-Owner's firm-wide scope. Every number below is computed from this hub's own deals and roster: split-and-cap math, not typed in, not reconstructed at month end.",
+    '<button class="btn green sm" id="askHarper">Ask Harper</button>'
+  ));
+
+  /* -------------------------------------------------------- the KPI board */
+  var kpis = A.kpis();
+  function fmt(k) {
+    if (k.fmt === "pct")   return A.pct(k.value, 1);
+    if (k.fmt === "int")   return String(k.value);
+    return A.money(k.value);
+  }
+  var headline = kpis[0], rest = kpis.slice(1);
+  var statHTML = A.stat(headline.label, fmt(headline), "Brokerage share kept after splits, caps & franchise — YTD closed", "good headline") +
+    rest.map(function (k) { return A.stat(k.label, fmt(k), k.help && k.help.length < 60 ? "" : "", k.band); }).join("");
+
+  c.appendChild(A.card(
+    '<div class="between"><div>' +
+      '<h2>Company Dollar — the number the firm actually keeps</h2>' +
+      '<div class="card-sub">Company dollar and cap progress are to a brokerage what WIP is to a builder: the ' +
+      'live signal most firms can\'t produce on demand. Computed here off every closed deal\'s split and cap.</div>' +
+    '</div></div>' +
+    '<div class="statrow">' + statHTML + '</div>' +
+    A.srcNote("Company dollar = GCI − agent splits − cap credits − franchise fees, computed per deal. " +
+              "No national target band exists for these (splits/caps are firm-specific), so none is asserted — " +
+              "the values are live off this floor.")
+  ));
+
+  /* -------------------------------------------------------- cap progress */
+  var caps = A.capProgress(d);
+  var capRows = caps.map(function (cp) {
+    var band = cp.capped ? "good" : (cp.pct > 55 ? "watch" : "");
+    return '<tr>' +
+      '<td><div class="t-main">' + A.esc(cp.name) + '</div><div class="t-sub">' + A.esc(cp.role) + '</div></td>' +
+      '<td>' + (cp.capped ? A.tag("CAPPED — ~100% now", "good") : A.tag("pre-cap · house split", "ghost")) + '</td>' +
+      '<td class="num">' + A.money(cp.paid) + ' / ' + A.money(cp.cap) +
+        A.bar(cp.pct, cp.capped ? "" : "brass") + '</td>' +
+      '<td class="num">' + (cp.capped ? "—" : A.money(cp.remaining)) + '</td>' +
+    '</tr>';
+  }).join("");
+
+  c.appendChild(A.card(
+    '<div class="between"><div>' +
+      '<h2>Cap progress — who has flipped, and who is close</h2>' +
+      '<div class="card-sub">A capped agent keeps ~100% and the house takes only a flat transaction fee — so as your ' +
+      'top producers cap out, company dollar rides on the mid-tier. That is the story behind the ' + A.pct(A.commissionTotals(d).companyPct,1) + ' company-dollar rate.</div>' +
+    '</div></div>' +
+    '<table><thead><tr><th>Agent</th><th>Status</th><th class="num">Cap paid to house (YTD)</th><th class="num">Remaining</th></tr></thead>' +
+    '<tbody>' + capRows + '</tbody></table>'
+  ));
+
+  /* ----------------------------------------------- pipeline: closed + pending */
+  var grid = document.createElement("div"); grid.className = "grid g2";
+
+  var pending = d.deals.filter(function (x) { return x.status === "Pending" || x.status === "Clear to Close"; });
+  var penRows = pending.map(function (x) {
+    var cleared = A.dealCleared(d, x.mls);
+    var blocked = x.status === "Pending" && !cleared;
+    return '<tr>' +
+      '<td><div class="t-main">' + A.esc(x.address) + '</div><div class="t-sub">' + A.esc(x.mls) + ' · ' + A.esc(x.agent) + '</div></td>' +
+      '<td>' + A.tag(x.side, "ghost") + '</td>' +
+      '<td class="num">' + A.money(x.price) + '<div class="t-sub">' + A.money(A.gci(x)) + ' GCI</div></td>' +
+      '<td>' + (x.status === "Clear to Close" ? A.tag("clear to close", "good")
+                : blocked ? A.tag("compliance hold", "bad") : A.tag("pending", "watch")) + '</td>' +
+    '</tr>';
+  }).join("");
+
+  grid.appendChild(A.card(
+    '<h2>Pending pipeline</h2>' +
+    '<div class="card-sub">Under contract, not yet closed. A deal can\'t reach clear-to-close until its documents pass ' +
+    'the broker compliance portal — one file here is blocked on a rejected agency disclosure.</div>' +
+    '<table><thead><tr><th>Property</th><th>Side</th><th class="num">Price</th><th>Gate</th></tr></thead>' +
+    '<tbody>' + penRows + '</tbody></table>' +
+    '<div class="divider"></div>' +
+    '<div class="fence"><b>' + A.money(A.pendingVolume(d)) + ' in pending volume</b> across ' + pending.length + ' files. ' +
+    'The blocked one can\'t fund until compliance clears it. <a href="transactions.html">Open the compliance gate →</a></div>'
+  ));
+
+  var prod = A.production(d).filter(function (p) { return p.deals > 0; });
+  var prodRows = prod.map(function (p) {
+    return '<tr>' +
+      '<td><div class="t-main">' + A.esc(p.name) + '</div><div class="t-sub">' + A.esc(p.role) + '</div></td>' +
+      '<td class="num">' + p.deals + '</td>' +
+      '<td class="num">' + A.money(p.volume) + '</td>' +
+      '<td class="num"><b style="color:var(--green-2)">' + A.money(p.companyDollar) + '</b></td>' +
+    '</tr>';
+  }).join("");
+
+  grid.appendChild(A.card(
+    '<h2>Per-agent production (closed)</h2>' +
+    '<div class="card-sub">Volume and the company dollar each agent actually generated. Note how a capped producer ' +
+    'can drive big volume but leave the house only a flat fee.</div>' +
+    '<table><thead><tr><th>Agent</th><th class="num">Units</th><th class="num">Volume</th><th class="num">Company $</th></tr></thead>' +
+    '<tbody>' + prodRows + '</tbody></table>' +
+    '<div class="divider"></div>' +
+    '<a class="btn ghost sm" href="analytics.html">Open the analytics board →</a>'
+  ));
+  c.appendChild(grid);
+
+  /* ---------------------------------------------- compliance + approvals row */
+  var grid2 = document.createElement("div"); grid2.className = "grid g2";
+
+  var blocks = A.complianceBlocks(d);
+  var blockRows = blocks.map(function (b) {
+    var dt = A.DOC_TYPES.filter(function (t) { return t.k === b.doc; })[0];
+    return '<tr><td><div class="t-main">' + A.esc(b.deal) + '</div>' +
+      '<div class="t-sub">' + A.esc(dt ? dt.label : b.doc) + '</div></td>' +
+      '<td>' + A.tag(b.status, b.status === "Rejected" ? "bad" : "watch") + '</td></tr>';
+  }).join("") || '<tr><td colspan="2" class="empty">Every open file is clear. Good.</td></tr>';
+
+  grid2.appendChild(A.card(
+    '<h2>Compliance review — the rights-gate <span class="tag watch mono">BROKER</span></h2>' +
+    '<div class="card-sub">The managing broker approves, rejects or requests changes on agent documents. A rejected ' +
+    'required doc blocks the deal from clear-to-close — the brokerage analog of a builder\'s cost/time gate.</div>' +
+    '<table><thead><tr><th>Blocking a file</th><th>Status</th></tr></thead><tbody>' + blockRows + '</tbody></table>' +
+    '<div class="divider"></div>' +
+    '<a class="btn ghost sm" href="transactions.html">Open the compliance portal →</a>'
+  ));
+
+  var pend = A.approvals().filter(function (a) { return a.state === "Pending"; });
+  var apRows = pend.map(function (a) {
+    return '<tr><td><div class="t-main">' + A.esc(a.title) + '</div>' +
+      '<div class="t-sub">' + A.esc(a.summary) + '</div></td>' +
+      '<td>' + A.tag(a.kind, "watch") + '<div class="t-sub">' + A.esc(a.by) + '</div></td></tr>';
+  }).join("") || '<tr><td colspan="2" class="empty">The desk is empty. That is the goal.</td></tr>';
+
+  grid2.appendChild(A.card(
+    '<h2>Approval Desk <span class="tag watch mono">GHOST MODE</span></h2>' +
+    '<div class="card-sub">The org clears everything it honestly can. Only true fences reach the Broker-Owner — a send, ' +
+    'a spend, moving money, or booking a human. A desk trending toward empty is the autonomy scoreboard.</div>' +
+    '<table><thead><tr><th>Waiting on you</th><th>Fence</th></tr></thead><tbody>' + apRows + '</tbody></table>' +
+    '<div class="divider"></div>' +
+    '<a class="btn ghost sm" href="approvals.html">Open the desk →</a>'
+  ));
+  c.appendChild(grid2);
+
+  /* --------------------------------------------------------- what it replaces */
+  var repRows = A.REPLACES.map(function (r) {
+    return '<tr><td><div class="t-main">' + A.esc(r.tool) + '</div>' +
+      '<div class="t-sub">' + A.esc(r.job) + '</div></td>' +
+      '<td class="k">' + A.esc(r.cost) + '</td></tr>';
+  }).join("");
+  c.appendChild(A.card(
+    '<h2>What this replaces</h2>' +
+    '<div class="card-sub">We price against the stack and the headcount it retires, not against a website. Where a ' +
+    'vendor doesn\'t publish a price, we say so rather than inventing one.</div>' +
+    '<table><thead><tr><th>Today</th><th>What it costs</th></tr></thead><tbody>' + repRows + '</tbody></table>' +
+    A.srcNote("Vendor-published where published; third-party estimates labeled as such. kvCORE/BoldTrail and most " +
+              "brokerage back-office tools are quote-only.")
+  ));
+
+  /* ----------------------------------------------------------- Ask Harper flow */
+  c.appendChild(A.card(
+    '<h2>Ask Harper — the COO seat</h2>' +
+    '<div class="card-sub">Harper reads the ask, routes it to the right department, lets that chain work under its own ' +
+    'confidence bar, and packages one clean answer back. She gates and packages — she does not do the work.</div>' +
+    '<div class="row" style="margin-bottom:12px">' +
+      '<input id="q" placeholder="e.g. Are we billing everything we\'ve earned? Who\'s about to cap out?" style="flex:1;min-width:260px">' +
+      '<button class="btn green" id="go">Route it</button>' +
+    '</div>' +
+    '<div class="row" style="gap:6px;margin-bottom:4px">' +
+      ['What is our company dollar and why?',
+       'Which files are blocked in compliance?',
+       'Who is about to cap out?',
+       'Is anyone\'s license about to lapse?'].map(function (s) {
+        return '<button class="btn ghost sm ex" data-q="' + A.esc(s) + '">' + A.esc(s) + '</button>';
+      }).join("") +
+    '</div>' +
+    '<div id="out"></div>', "harper"
+  ));
+
+  function renderAnswer(r) {
+    var out = document.getElementById("out");
+    var v = r.result.verdict, dept = r.dept, passed = r.result.passed;
+    var pctv = Math.min(100, v.conf);
+    out.innerHTML =
+      '<div class="divider"></div>' +
+      '<div class="' + (passed ? "busrow conclude" : "busrow reject") + '" style="display:block">' +
+        '<div class="bus-topic">' + (passed ? "coo.released" : "escalation.below_bar") + '</div>' +
+        '<div class="bus-body" style="margin-top:5px">' + A.esc(r.packaged) + '</div>' +
+      '</div>' +
+      '<div class="conf">' +
+        '<span class="muted small">' + A.esc(dept.name) + ' · bar ' + dept.gate + '%</span>' +
+        '<span class="conf-bar"><i class="conf-fill ' + (passed ? "" : "under") + '" style="width:' + pctv + '%"></i>' +
+        '<span class="conf-gate" style="left:' + dept.gate + '%"></span></span>' +
+        '<span class="conf-n">' + v.conf + '%</span>' +
+      '</div>' +
+      '<ul class="reasons">' + v.reasons.map(function (x) {
+        return '<li><span class="rtag ' + x.t + '">' + x.t.toUpperCase() + '</span><span>' + A.esc(x.s) + '</span></li>';
+      }).join("") + '</ul>' +
+      '<div class="srcnote">Routed through ' + A.esc(dept.dh.name) + ' (DH) → ' + A.esc(dept.ae.name) +
+        ' (AE) → the bus → ' + A.esc(dept.pace.name) + ' (Pacemaker) → ' + A.esc(dept.lensA.name) +
+        ' / ' + A.esc(dept.lensB.name) + ' (opposing lenses). Full trace on the Agent Org page.</div>';
+  }
+
+  function ask(q) {
+    if (!q) { A.toast("Type a question first.", ""); return; }
+    renderAnswer(A.askHarper(q));
+  }
+  setTimeout(function () {
+    document.getElementById("go").addEventListener("click", function () {
+      ask(document.getElementById("q").value.trim());
+    });
+    document.getElementById("q").addEventListener("keydown", function (e) {
+      if (e.key === "Enter") ask(this.value.trim());
+    });
+    Array.prototype.forEach.call(document.querySelectorAll(".ex"), function (b) {
+      b.addEventListener("click", function () {
+        document.getElementById("q").value = this.dataset.q;
+        ask(this.dataset.q);
+      });
+    });
+    var an = document.getElementById("askHarper");
+    if (an) an.addEventListener("click", function () {
+      document.getElementById("q").scrollIntoView({ behavior: "smooth", block: "center" });
+      document.getElementById("q").focus();
+    });
+  }, 0);
+})();
+</script>
+</body>
+</html>

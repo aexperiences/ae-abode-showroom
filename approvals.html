@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Approval Desk · Abode OS</title>
+<meta name="description" content="Abode OS — the operating system for a real estate brokerage. Powered by Accelerated Experiences LLC.">
+<link rel="icon" href="https://www.aexperiences.com/Abode_OS.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,500;9..144,600&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="abode.css">
+</head>
+<body>
+<script src="abode.js"></script>
+<script>
+(function () {
+  var A = window.Abode;
+  var c = A.mount({ active: "approvals.html", crumb: "Approval Desk" });
+
+  c.appendChild(A.page(
+    "Approval Desk",
+    "Ghost Mode. The org clears everything it can honestly clear — only true Fences land here: sending to a real " +
+    "contact, spending real ad money, moving money to title, or booking a human. Approving here files the decision. " +
+    "It does not send, spend, publish or move anything — this is a showroom.",
+    ""
+  ));
+
+  var KINDS = {
+    spend:       { label:"Spend", note:"Puts real money against a live ad account." },
+    external:    { label:"External send", note:"Reaches real people outside the office." },
+    money:       { label:"Money movement", note:"Authorizes a disbursement to title / escrow." },
+    appointment: { label:"Appointment", note:"Booked for a human to take." },
+    pricing:     { label:"Pricing", note:"Sets or changes a live price." },
+    general:     { label:"Filed", note:"A released conclusion, filed for the record." },
+    escalation:  { label:"Escalation", note:"Held below the department bar — needs a human." }
+  };
+
+  var listCard = A.card(
+    '<div class="between"><div>' +
+      '<h2>Waiting on the Broker-Owner</h2>' +
+      '<div class="card-sub">A desk trending toward empty is the scoreboard for autonomy. Everything here is a Fence ' +
+      'the org deliberately would not cross on its own.</div>' +
+    '</div><div id="deskCount"></div></div>' +
+    '<div id="deskList"></div>', "desk"
+  );
+  c.appendChild(listCard);
+
+  c.appendChild(A.card(
+    '<h2>Why a desk, and why keep it empty</h2>' +
+    '<div class="card-sub">The point of the agent org is to keep this desk clear, not to fill it.</div>' +
+    '<div class="fence"><b>Nothing on this floor sends, spends, publishes or moves money.</b> A commission ' +
+    'disbursement to title, an ad-campaign launch, a blast to a sphere, a booked appointment — each is staged here ' +
+    'for a human decision. In production the Broker-Owner (or the seat they delegate to) is the only one who can ' +
+    'release a Fence.</div>' +
+    '<div class="divider"></div>' +
+    '<div class="row">' +
+      A.tag("send → staged", "ghost") + A.tag("spend → staged", "ghost") +
+      A.tag("move money → staged", "ghost") + A.tag("publish → staged", "ghost") +
+      A.tag("book a human → staged", "ghost") +
+    '</div>'
+  ));
+
+  function render() {
+    var items = A.approvals();
+    var pending = items.filter(function (a) { return a.state === "Pending"; });
+    document.getElementById("deskCount").innerHTML =
+      A.tag(pending.length + " pending", pending.length ? "watch" : "good");
+
+    if (!items.length) {
+      document.getElementById("deskList").innerHTML = '<div class="empty">The desk is empty. That is the goal.</div>';
+      return;
+    }
+    document.getElementById("deskList").innerHTML = items.map(function (a) {
+      var k = KINDS[a.kind] || KINDS.general;
+      var done = a.state !== "Pending";
+      return '<div class="card" style="margin:0 0 10px;box-shadow:none;border-left:3px solid var(--' +
+          (a.state === "Approved" ? "good" : a.state === "Declined" ? "bad" : "brass") + ')">' +
+        '<div class="between"><div>' +
+          '<div class="t-main" style="font-size:13.5px">' + A.esc(a.title) + '</div>' +
+          '<div class="t-sub">' + A.esc(a.summary) + '</div>' +
+        '</div><div class="row" style="flex:none">' +
+          A.tag(k.label, "watch") +
+          (done ? A.tag(a.state, a.state === "Approved" ? "good" : "bad") : "") +
+        '</div></div>' +
+        '<div class="divider"></div>' +
+        '<div class="fence brass" style="margin-bottom:10px"><b>Fence:</b> ' + A.esc(a.why) +
+          ' <span class="muted">· raised by ' + A.esc(a.by) + '</span></div>' +
+        (done ? '<span class="muted small">Decision filed — the showroom took no real action either way.</span>' :
+          '<div class="row">' +
+            '<button class="btn green sm" data-approve="' + A.esc(a.id) + '">Approve (files only)</button>' +
+            '<button class="btn ghost sm" data-decline="' + A.esc(a.id) + '">Decline</button>' +
+            '<span class="muted small">' + A.esc(k.note) + ' Approving here does not perform it.</span>' +
+          '</div>') +
+      '</div>';
+    }).join("");
+
+    Array.prototype.forEach.call(document.querySelectorAll("[data-approve]"), function (b) {
+      b.addEventListener("click", function () {
+        A.decideApproval(this.dataset.approve, "Approved");
+        A.toast("Filed as approved — nothing was sent, spent or moved. Ghost Mode.", "ok");
+        render();
+      });
+    });
+    Array.prototype.forEach.call(document.querySelectorAll("[data-decline]"), function (b) {
+      b.addEventListener("click", function () {
+        A.decideApproval(this.dataset.decline, "Declined");
+        A.toast("Declined and filed.", "ok");
+        render();
+      });
+    });
+  }
+  render();
+})();
+</script>
+</body>
+</html>

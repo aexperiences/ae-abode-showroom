@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Transactions · Compliance · Abode OS</title>
+<meta name="description" content="Abode OS — the operating system for a real estate brokerage. Powered by Accelerated Experiences LLC.">
+<link rel="icon" href="https://www.aexperiences.com/Abode_OS.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,500;9..144,600&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="abode.css">
+</head>
+<body>
+<script src="abode.js"></script>
+<script>
+(function () {
+  var A = window.Abode;
+  var c = A.mount({ active: "transactions.html", crumb: "Transactions · Compliance" });
+  var d = A.db();
+
+  c.appendChild(A.page(
+    "Transactions · Compliance",
+    "The rights-gate. The managing broker reviews every agent document; a deal cannot reach clear-to-close until its " +
+    "required docs clear. Milestone tasks fall off the contract date, and e-sign runs off pre-filled forms. This is " +
+    "the managing-broker scope — the whole firm's files at once.",
+    '<button class="btn green sm" id="consultBtn">Consult Compliance</button>'
+  ));
+
+  /* ------------------------------------------------- files & their gate state */
+  var deals = d.deals.filter(function (x) { return x.status !== "Closed"; });
+  var boardCard = A.card(
+    '<h2>Open files — clear-to-close gate</h2>' +
+    '<div class="card-sub">A file is cleared only when every required document is Approved. One rejected or ' +
+    'changes-requested doc holds the whole file — the brokerage analog of a builder\'s cost/time gate.</div>' +
+    '<div id="files"></div>'
+  );
+  c.appendChild(boardCard);
+
+  /* --------------------------------------------- the compliance review portal */
+  var portalCard = A.card(
+    '<div class="between"><div>' +
+      '<h2>Compliance review portal <span class="tag watch mono">MANAGING BROKER</span></h2>' +
+      '<div class="card-sub">Regina Alvarez\'s queue. Approve, reject, or request changes on each document. A rejected ' +
+      'required doc immediately blocks its file. Nothing here notifies anyone — decisions file to the record.</div>' +
+    '</div></div>' +
+    '<div id="portal"></div>'
+  );
+  c.appendChild(portalCard);
+
+  /* --------------------------------------------- milestone checklist */
+  var msCard = A.card(
+    '<div class="between"><div>' +
+      '<h2>Transaction checklist — milestones off the contract date</h2>' +
+      '<div class="card-sub">Earnest money in 3 days, inspection in 10, appraisal in 21, financing in 30, walk-through ' +
+      'the day before close. Pick a file to see its computed deadlines.</div>' +
+    '</div><div class="field" style="flex:none;margin:0;min-width:260px"><select id="msDeal"></select></div></div>' +
+    '<div id="milestones"></div>'
+  );
+  c.appendChild(msCard);
+
+  /* --------------------------------------------- e-sign */
+  c.appendChild(A.card(
+    '<h2>E-signature &amp; forms engine</h2>' +
+    '<div class="card-sub">Pre-filled local-association forms, ready to route for signature — the native replacement ' +
+    'for DocuSign Rooms / dotloop.</div>' +
+    '<div class="fence"><b>Ghost Mode:</b> the showroom will build and preview an envelope, but it never actually ' +
+    'sends one to a party. Routing a form for signature reaches a real person, so it stages to the Approval Desk.</div>' +
+    '<div class="divider"></div>' +
+    '<div class="row">' +
+      A.tag("Purchase & Sale Agreement", "ghost") + A.tag("Agency Disclosure", "ghost") +
+      A.tag("Seller Property Disclosure", "ghost") + A.tag("Lead-Based Paint Disclosure", "ghost") +
+      A.tag("Wire-Fraud Advisory", "ghost") +
+    '</div>'
+  ));
+
+  /* ------------------------------------------------------------ renderers */
+  function docLabel(k) { var t = A.DOC_TYPES.filter(function (x) { return x.k === k; })[0]; return t ? t.label : k; }
+  function docBand(s) { return s === "Approved" ? "good" : (s === "Rejected" ? "bad" : "watch"); }
+
+  function renderFiles() {
+    var dd = A.db();
+    var open = dd.deals.filter(function (x) { return x.status !== "Closed"; });
+    document.getElementById("files").innerHTML =
+      '<table><thead><tr><th>Property</th><th>Agent</th><th class="num">Price</th><th>Docs</th><th>Gate</th></tr></thead><tbody>' +
+      open.map(function (x) {
+        var docs = A.docsFor(dd, x.mls);
+        var cleared = A.dealCleared(dd, x.mls);
+        var blocking = docs.filter(function (c) { return c.status === "Rejected" || c.status === "Changes Requested"; });
+        return '<tr>' +
+          '<td><div class="t-main">' + A.esc(x.address) + '</div><div class="t-sub">' + A.esc(x.mls) + '</div></td>' +
+          '<td>' + A.esc(x.agent) + '</td>' +
+          '<td class="num">' + A.money(x.price) + '</td>' +
+          '<td>' + docs.filter(function(c){return c.status==="Approved";}).length + ' / ' + docs.length + ' approved' +
+            (blocking.length ? '<div class="t-sub" style="color:var(--bad)">' + blocking.length + ' blocking</div>' : '') + '</td>' +
+          '<td>' + (cleared ? A.tag("CLEAR TO CLOSE", "good") :
+            blocking.some(function(b){return b.status==="Rejected";}) ? A.tag("BLOCKED", "bad") : A.tag("in review", "watch")) + '</td>' +
+        '</tr>';
+      }).join("") + '</tbody></table>' +
+      '<div class="divider"></div>' +
+      '<div class="fence plum"><b>44 Mica Bay is blocked.</b> Its agency disclosure was rejected — a required document ' +
+      'cannot be missing or wrong and still fund. Re-execute it in the portal below and watch the file clear.</div>';
+  }
+
+  function renderPortal() {
+    var dd = A.db();
+    document.getElementById("portal").innerHTML =
+      '<table><thead><tr><th>File</th><th>Document</th><th>Status</th><th>Reviewer note</th><th>Action</th></tr></thead><tbody>' +
+      dd.compliance.map(function (cp) {
+        return '<tr>' +
+          '<td class="k">' + A.esc(cp.mls) + '<div class="t-sub">' + A.esc(cp.deal.split(",")[0]) + '</div></td>' +
+          '<td>' + A.esc(docLabel(cp.doc)) + '</td>' +
+          '<td>' + A.tag(cp.status, docBand(cp.status)) + '</td>' +
+          '<td class="t-sub" style="max-width:280px">' + A.esc(cp.note) + '</td>' +
+          '<td><div class="row" style="gap:5px;flex-wrap:nowrap">' +
+            (cp.status !== "Approved" ? '<button class="btn green sm" data-doc="' + cp.id + '" data-set="Approved">Approve</button>' : '') +
+            (cp.status !== "Rejected" ? '<button class="btn ghost sm" data-doc="' + cp.id + '" data-set="Rejected">Reject</button>' : '') +
+          '</div></td>' +
+        '</tr>';
+      }).join("") + '</tbody></table>';
+
+    Array.prototype.forEach.call(document.querySelectorAll("[data-doc]"), function (b) {
+      b.addEventListener("click", function () {
+        var id = this.dataset.doc, set = this.dataset.set;
+        A.save(function (x) { (x.compliance||[]).forEach(function (c) { if (c.id === id) {
+          c.status = set;
+          c.note = set === "Approved" ? "Cleared by the managing broker." : c.note;
+        } }); });
+        A.toast("Document " + set.toLowerCase() + " — file gate recomputed. Nothing was sent.", "ok");
+        renderFiles(); renderPortal(); renderMilestones();
+      });
+    });
+  }
+
+  function renderMilestones() {
+    var dd = A.db();
+    var sel = document.getElementById("msDeal");
+    var x = dd.deals.filter(function (z) { return z.mls === sel.value; })[0];
+    if (!x) { document.getElementById("milestones").innerHTML = ""; return; }
+    var ms = A.milestonesFor(x);
+    var cleared = A.dealCleared(dd, x.mls);
+    document.getElementById("milestones").innerHTML =
+      '<table><thead><tr><th>Milestone</th><th>Computed date</th><th>What it is</th></tr></thead><tbody>' +
+      ms.map(function (m) {
+        var isClose = m.k === "close";
+        return '<tr>' +
+          '<td><div class="t-main">' + A.esc(m.name) + '</div></td>' +
+          '<td class="k">' + A.esc(m.date) + (isClose && !cleared ? ' <span class="tag bad">gated</span>' : '') + '</td>' +
+          '<td class="t-sub">' + A.esc(m.note) + '</td>' +
+        '</tr>';
+      }).join("") + '</tbody></table>' +
+      '<div class="srcnote">Computed off the contract date ' + A.esc(x.contractDate) + '. ' +
+      (cleared ? 'All docs clear — this file can fund on its close date.' :
+       'Clear-to-close is gated until every required document is approved in the portal.') +
+      ' Local addenda can shift a deadline; confirm against the executed contract.</div>';
+  }
+
+  setTimeout(function () {
+    var sel = document.getElementById("msDeal");
+    A.db().deals.filter(function (x) { return x.status !== "Closed"; }).forEach(function (x) {
+      var o = document.createElement("option"); o.value = x.mls; o.textContent = x.mls + " — " + x.address; sel.appendChild(o);
+    });
+    sel.addEventListener("change", renderMilestones);
+    renderFiles(); renderPortal(); renderMilestones();
+
+    var cb = document.getElementById("consultBtn");
+    if (cb) cb.addEventListener("click", function () {
+      var r = A.consult("transactions", "Which files are blocked before clear-to-close?");
+      A.toast(r.passed ? "Compliance released at " + r.verdict.conf + "% — the gate is doing its job." :
+        "Compliance held at " + r.verdict.conf + "%. See the Agent Org page.", "ok");
+    });
+  }, 0);
+})();
+</script>
+</body>
+</html>

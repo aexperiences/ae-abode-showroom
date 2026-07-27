@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Books &amp; Metrics · Abode OS</title>
+<meta name="description" content="Abode OS — the operating system for a real estate brokerage. Powered by Accelerated Experiences LLC.">
+<link rel="icon" href="https://www.aexperiences.com/Abode_OS.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,500;9..144,600&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="abode.css">
+</head>
+<body>
+<script src="abode.js"></script>
+<script>
+(function () {
+  var A = window.Abode;
+  var c = A.mount({ active: "books.html", crumb: "Books & Metrics" });
+  var d = A.db();
+
+  c.appendChild(A.page(
+    "Books & Metrics",
+    "The general-ledger view of the same money spine — company dollar, GCI, franchise fees and desk-fee AR, computed " +
+    "not reconstructed. Syncs to QuickBooks / Xero in production; ACH payouts run on Stripe / Plaid.",
+    '<button class="btn green sm" id="consultBtn">Consult Accounting</button>'
+  ));
+
+  var t = A.commissionTotals(d);
+  var ar = A.deskFeeAR(d);
+
+  c.appendChild(A.card(
+    '<h2>Income statement — commission side</h2>' +
+    '<div class="card-sub">Every line falls out of the deals and the roster. This is the number a Broker-Owner is ' +
+    'actually judged on, and the one most firms can\'t produce mid-month.</div>' +
+    '<table><tbody>' +
+      '<tr><td>Gross commission income (GCI)</td><td class="num"><b>' + A.money(t.gci) + '</b></td></tr>' +
+      '<tr><td>Less: franchise fees (off the top)</td><td class="num">−' + A.money(t.franchise) + '</td></tr>' +
+      '<tr><td>Less: paid to agents (after cap)</td><td class="num">−' + A.money(t.agentNet) + '</td></tr>' +
+      '<tr><td><b>Company dollar</b> — kept by the brokerage</td><td class="num"><b style="color:var(--green-2)">' + A.money(t.companyDollar) + '</b></td></tr>' +
+      '<tr><td>Company dollar %</td><td class="num">' + A.pct(t.companyPct, 1) + '</td></tr>' +
+    '</tbody></table>' +
+    A.srcNote("Company dollar is a standard brokerage-accounting figure (RealTrends convention). No single national " +
+              "target exists — it depends entirely on the firm's split/cap plan, so none is asserted.")
+  ));
+
+  /* desk-fee AR aging */
+  var arRows = d.billing.filter(function (b) { return b.status === "Open"; }).sort(function (a, b) { return b.age - a.age; })
+    .map(function (b) {
+      var tot = (Number(b.deskFee)||0) + (Number(b.techFee)||0) + (Number(b.mktg)||0);
+      return '<tr><td>' + A.esc(b.agent) + '</td><td class="num">' + A.money(tot) + '</td>' +
+        '<td class="num">' + b.age + ' d</td>' +
+        '<td>' + A.tag(b.age > 30 ? "over 30" : "current", b.age > 30 ? "bad" : "good") + '</td></tr>';
+    }).join("");
+  c.appendChild(A.card(
+    '<h2>Desk-fee AR aging</h2>' +
+    '<div class="card-sub">Charge-backs owed by agents — receivable, not revenue. One line is aging past 30 days.</div>' +
+    '<table><thead><tr><th>Agent</th><th class="num">Owed</th><th class="num">Age</th><th>Bucket</th></tr></thead>' +
+    '<tbody>' + arRows + '</tbody></table>' +
+    '<div class="divider"></div>' +
+    '<div class="fence"><b>' + A.money(ar) + ' open across the roster.</b> The org sets the follow-up automatically; a ' +
+    'fee waiver, though, is a Fence — it changes what an agent owes, so it goes to the desk.</div>'
+  ));
+
+  /* metrics */
+  c.appendChild(A.card(
+    '<h2>The metrics that don\'t lie</h2>' +
+    '<div class="card-sub">Computed live from this floor. Where real estate has no clean published benchmark, the band ' +
+    'is shown blank rather than invented.</div>' +
+    '<div class="statrow">' +
+      A.stat("Closed volume", A.money(A.closedVolume(d)), A.unitsClosed(d) + " units", "good") +
+      A.stat("Pending volume", A.money(A.pendingVolume(d)), A.unitsPending(d) + " files", "watch") +
+      A.stat("Avg sale price", A.money(A.avgSalePrice(d)), "closed") +
+      A.stat("Company dollar / deal", A.money(t.deals ? Math.round(t.companyDollar / t.deals) : 0), "average kept per close") +
+    '</div>' +
+    A.srcNote("Benchmark bands ship blank where no reliable public figure exists (splits, caps, DOM are local/firm-specific).")
+  ));
+
+  setTimeout(function () {
+    var cb = document.getElementById("consultBtn");
+    if (cb) cb.addEventListener("click", function () {
+      var r = A.consult("money", "What is our company dollar?");
+      A.toast(r.passed ? "Accounting released at " + r.verdict.conf + "%." : "Accounting held at " + r.verdict.conf + "% (85% bar).", "ok");
+    });
+  }, 0);
+})();
+</script>
+</body>
+</html>

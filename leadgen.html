@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Lead Gen · Front Office · Abode OS</title>
+<meta name="description" content="Abode OS — the operating system for a real estate brokerage. Powered by Accelerated Experiences LLC.">
+<link rel="icon" href="https://www.aexperiences.com/Abode_OS.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,500;9..144,600&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="abode.css">
+</head>
+<body>
+<script src="abode.js"></script>
+<script>
+(function () {
+  var A = window.Abode;
+  var c = A.mount({ active: "leadgen.html", crumb: "Lead Gen · Front Office" });
+  var d = A.db();
+
+  c.appendChild(A.page(
+    "Lead Gen · Front Office",
+    "IDX brokerage + per-agent sites, the lead-routing engine, and the Google/Meta ad manager in one place. In " +
+    "production this pulls live listings via the RESO Web API and ingests lead forms from Meta Graph and Google Ads " +
+    "— simulated here, in-tab.",
+    '<button class="btn green sm" id="consultBtn">Consult Lead Gen</button>'
+  ));
+
+  /* IDX sites */
+  c.appendChild(A.card(
+    '<h2>IDX websites</h2>' +
+    '<div class="card-sub">One SEO brokerage site plus a site per agent, all fed from the same normalized MLS data ' +
+    'so listings render uniformly everywhere.</div>' +
+    '<div class="statrow">' +
+      A.stat("Brokerage site", "1", "coeur-brokerage.example") +
+      A.stat("Agent sites", String(d.agents.filter(function(a){return a.type==="Human"&&a.role.indexOf("Broker")<0;}).length), "one per producing agent") +
+      A.stat("Listings syndicated", String(d.listings.length), "from the normalized RESO feed") +
+      A.stat("Feed status", "WATCH", "last sync 41 min ago", "watch") +
+    '</div>' +
+    A.srcNote("RESO Web API is the industry-standard listing feed; the showroom simulates it with the seeded listings.")
+  ));
+
+  /* Lead routing */
+  var routeRows = A.ROUTING.map(function (r) {
+    return '<tr><td><div class="t-main">' + A.esc(r.name) + '</div></td>' +
+      '<td class="t-sub">' + A.esc(r.note) + '</td></tr>';
+  }).join("");
+  c.appendChild(A.card(
+    '<div class="between"><div>' +
+      '<h2>Lead-routing engine</h2>' +
+      '<div class="card-sub">Distribution rules for every inbound lead. Pick a rule and preview where the current ' +
+      'unassigned leads would go.</div>' +
+    '</div><div class="field" style="flex:none;margin:0;min-width:220px"><select id="rule">' +
+      A.ROUTING.map(function (r) { return '<option value="' + r.k + '">' + A.esc(r.name) + '</option>'; }).join("") +
+    '</select></div></div>' +
+    '<table><thead><tr><th>Rule</th><th>How it distributes</th></tr></thead><tbody>' + routeRows + '</tbody></table>' +
+    '<div class="divider"></div>' +
+    '<div id="routePreview"></div>'
+  ));
+
+  /* Ad campaign manager */
+  var campRows = d.campaigns.map(function (cm) {
+    return '<tr>' +
+      '<td><div class="t-main">' + A.esc(cm.name) + '</div><div class="t-sub">' + A.esc(cm.note) + '</div></td>' +
+      '<td>' + A.tag(cm.channel, "ghost") + '</td>' +
+      '<td class="num">' + A.money(cm.budget) + '/mo</td>' +
+      '<td>' + A.tag(cm.status, "watch") + '</td>' +
+      '<td><button class="btn green sm" data-launch="' + cm.id + '">Launch</button></td>' +
+    '</tr>';
+  }).join("");
+  c.appendChild(A.card(
+    '<h2>Ad campaign manager <span class="tag watch mono">GHOST MODE</span></h2>' +
+    '<div class="card-sub">Launch Google, Facebook and Instagram real-estate ads from one dashboard. Every campaign ' +
+    'here is drafted; launching spends real money, so it stages to the Approval Desk.</div>' +
+    '<table><thead><tr><th>Campaign</th><th>Channel</th><th class="num">Budget</th><th>Status</th><th>Action</th></tr></thead>' +
+    '<tbody>' + campRows + '</tbody></table>' +
+    '<div class="divider"></div>' +
+    '<div class="fence brass"><b>Nothing spends here.</b> A launch is a Fence — it goes to the Approval Desk for the ' +
+    'Broker-Owner. Lead-form ingestion (Meta Graph / Google Ads) is inbound-only and safe to run.</div>'
+  ));
+
+  setTimeout(function () {
+    var rule = document.getElementById("rule");
+    var agents = d.agents.filter(function (a) { return a.status === "Active" && a.role.indexOf("Broker") < 0; });
+    var leads = d.contacts.filter(function (cc) { return cc.stage === "New" || cc.stage === "Warm"; });
+    function preview() {
+      var r = rule.value;
+      var rows = leads.map(function (l, i) {
+        var to;
+        if (r === "robin") to = agents[i % agents.length].name;
+        else if (r === "blast") to = "Pod — first to claim";
+        else to = agents[0].name + " (top converter)";
+        return '<tr><td>' + A.esc(l.name) + '<div class="t-sub">' + A.esc(l.source) + '</div></td>' +
+          '<td>' + A.esc(to) + '</td></tr>';
+      }).join("");
+      document.getElementById("routePreview").innerHTML =
+        '<div class="card-sub" style="margin-bottom:8px">Preview — where the ' + leads.length + ' unassigned leads would route under this rule:</div>' +
+        '<table><thead><tr><th>Lead</th><th>Routed to</th></tr></thead><tbody>' + rows + '</tbody></table>';
+    }
+    rule.addEventListener("change", preview); preview();
+
+    Array.prototype.forEach.call(document.querySelectorAll("[data-launch]"), function (b) {
+      b.addEventListener("click", function () {
+        var cm = d.campaigns.filter(function (z) { return z.id === this.dataset.launch; }.bind(this))[0];
+        A.stage("spend", "Launch “" + cm.name + "” — " + cm.channel + " Ads",
+          "$" + cm.budget + "/mo budget.", "Spends real ad money on a live account.", "Funnel (Lead Gen AE)");
+        this.disabled = true; this.textContent = "Staged ✓";
+        A.toast("Campaign staged to the Approval Desk — nothing spent. Ghost Mode.", "ok");
+      });
+    });
+
+    var cb = document.getElementById("consultBtn");
+    if (cb) cb.addEventListener("click", function () {
+      var r = A.consult("leadgen", "Where should this month's leads be routed?");
+      A.toast(r.passed ? "Lead Gen released at " + r.verdict.conf + "%." : "Lead Gen held at " + r.verdict.conf + "%.", "ok");
+    });
+  }, 0);
+})();
+</script>
+</body>
+</html>

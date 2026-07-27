@@ -1,0 +1,457 @@
+/* ============================================================================
+   ABODE OS — SHOWROOM SKIN
+   Real Estate Brokerage OS · Accelerated Experiences LLC
+
+   Palette note: warm sand/cream paper, DEEP EVERGREEN primary, BRASS/AMBER
+   accent — a "front door / sold-sign" sophistication. Deliberately NOT the
+   retired blue/navy brand (SSOT Art. VII), and clearly distinct from Buttress
+   (bone/brass) and LilNinja (chalk/tangerine). NO red anywhere — warm plum /
+   aubergine carries "needs attention." Tenant palette swaps via the Skin Machine.
+   ============================================================================ */
+
+:root{
+  /* surfaces — warm sand / cream paper, never harsh white */
+  --paper:#f2ede2;      /* warm sand — the mat */
+  --card:#fbf8f0;       /* cream card */
+  --sunk:#e7dfce;
+  --rail:#1c2a22;       /* deep evergreen rail */
+  --rail-2:#233329;
+
+  /* ink */
+  --ink:#20261f;
+  --ink-2:#48513f;
+  --mut:#8b8471;
+  --line:#ddd4c0;
+  --line-2:#efe8d8;
+  --on-rail:#e7e3d3;
+  --on-rail-mut:#9aa38f;
+
+  /* evergreen — the primary */
+  --green:#1f5d3f;
+  --green-2:#184a32;
+  --green-3:#3f8c62;    /* lighter, for on-rail accents */
+  --green-wash:rgba(31,93,63,.10);
+
+  /* brass / amber — the accent */
+  --brass:#b8862f;
+  --brass-2:#986c1e;
+  --brass-3:#d3a34c;
+  --brass-wash:rgba(184,134,47,.12);
+
+  /* department accents — warm, distinct, no red / no blue brand */
+  --a-leadgen:#b8862f;   /* amber */
+  --a-crm:#5f7d4e;       /* sage */
+  --a-listings:#a9743a;  /* terracotta-brown */
+  --a-txn:#8a6d3b;       /* bronze */
+  --a-money:#1f5d3f;     /* evergreen */
+  --a-analytics:#4a6b57; /* muted green */
+  --a-recruiting:#6d7f4a;/* olive */
+  --a-ops:#7b6a4f;       /* taupe */
+  --a-it:#4e6f66;        /* muted teal-green (not blue) */
+  --a-law:#7a3f5c;       /* plum */
+
+  /* semantic — good=evergreen, watch=brass, bad=warm plum (NEVER red) */
+  --good:#1f5d3f;
+  --watch:#b8862f;
+  --bad:#7a3f5c;
+  --good-w:rgba(31,93,63,.12);
+  --watch-w:rgba(184,134,47,.14);
+  --bad-w:rgba(122,63,92,.13);
+
+  --r:11px; --r-lg:15px;
+  --sh:0 1px 2px rgba(28,42,34,.05), 0 8px 24px -12px rgba(28,42,34,.18);
+  --sh-lg:0 2px 4px rgba(28,42,34,.06), 0 24px 56px -24px rgba(28,42,34,.30);
+  --sans:"Manrope",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --serif:"Fraunces","Georgia","Times New Roman",serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  font-family:var(--sans); color:var(--ink); background:var(--paper);
+  font-size:14px; line-height:1.5; -webkit-font-smoothing:antialiased;
+}
+a{color:inherit}
+h1,h2,h3,h4{margin:0; font-weight:700; letter-spacing:-.012em}
+p{margin:0}
+button{font:inherit}
+
+/* the warm "sold-sign" ground — a faint evergreen ledger grid */
+body::before{
+  content:""; position:fixed; inset:0; z-index:0; pointer-events:none;
+  background-image:
+    linear-gradient(rgba(31,93,63,.035) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(31,93,63,.035) 1px,transparent 1px);
+  background-size:38px 38px;
+}
+
+/* ------------------------------------------------------------------ layout */
+.app{position:relative; z-index:1; display:grid; grid-template-columns:250px 1fr; min-height:100vh}
+.main{min-width:0; display:flex; flex-direction:column}
+.content{padding:22px 30px 40px; flex:1; max-width:1360px; width:100%}
+
+/* the gate (index) centering */
+.gate-wrap{position:relative; z-index:1; min-height:100vh; display:flex; align-items:center; justify-content:center; padding:44px 20px}
+
+/* ----------------------------------------------------------------- sidebar */
+.sidebar{
+  background:linear-gradient(176deg,var(--rail) 0%,var(--rail-2) 100%);
+  color:var(--on-rail); padding:16px 12px 26px; position:sticky; top:0;
+  height:100vh; overflow-y:auto; border-right:1px solid #14201a;
+}
+.sidebar::-webkit-scrollbar{width:6px}
+.sidebar::-webkit-scrollbar-thumb{background:#33463b; border-radius:3px}
+
+.brand{display:flex; align-items:center; gap:11px; padding:6px 8px 16px; text-decoration:none; color:inherit}
+.bmark{
+  width:40px;height:40px;border-radius:12px; display:grid;place-items:center; overflow:hidden;
+  background:linear-gradient(150deg,var(--green) 0%,var(--green-2) 100%);
+  color:#fff; box-shadow:0 3px 12px -3px rgba(31,93,63,.55);
+}
+.bt{font-family:var(--serif); font-weight:600; font-size:16px; letter-spacing:-.01em}
+.bs{font-size:10px; color:var(--on-rail-mut); letter-spacing:.05em; text-transform:uppercase; margin-top:1px}
+
+.nav{display:flex; flex-direction:column; gap:1px}
+.nav-group{
+  font-size:9.5px; letter-spacing:.14em; text-transform:uppercase;
+  color:#7c8a7e; padding:15px 10px 5px; font-weight:800;
+}
+.navlink{
+  display:flex; align-items:center; gap:9px; padding:8px 11px; border-radius:9px;
+  text-decoration:none; color:#cbd2c3; font-size:13.2px; position:relative;
+  transition:background .13s, color .13s;
+}
+.navlink .ic{
+  width:19px; text-align:center; font-size:13px; color:var(--green-3); flex:none; opacity:.9;
+}
+.navlink .lb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.navlink:hover{background:rgba(255,255,255,.05); color:#f2f0e5}
+.navlink.active{background:rgba(63,140,98,.2); color:#fff}
+.navlink.active .ic{opacity:1; color:var(--brass-3)}
+.navlink.active::before{
+  content:""; position:absolute; left:-12px; top:8px; bottom:8px; width:3px;
+  background:var(--brass-3); border-radius:0 3px 3px 0;
+}
+.navlink.locked{opacity:.44}
+.navlink.locked:hover{opacity:.74; background:rgba(184,134,47,.09); cursor:pointer}
+.tier-tag{
+  font-size:9.5px; padding:2px 6px; border-radius:6px; flex:none;
+  background:rgba(184,134,47,.24); color:var(--brass-3); font-weight:800; font-family:var(--mono);
+}
+
+/* nav backdrop (mobile drawer) */
+.nav-backdrop{position:fixed; inset:0; background:rgba(28,42,34,.42); z-index:150; display:none}
+.nav-backdrop.show{display:block}
+
+/* ------------------------------------------------------------------ ribbon */
+.ribbon{
+  background:linear-gradient(90deg,rgba(31,93,63,.14),rgba(184,134,47,.08));
+  border-bottom:1px solid var(--line);
+  padding:7px 30px; font-size:12.2px; color:var(--ink-2);
+}
+.ribbon .live{
+  font-family:var(--mono); font-size:10px; letter-spacing:.1em; font-weight:700;
+  background:var(--green); color:#fff; padding:3px 7px; border-radius:6px; margin-right:7px;
+}
+.ribbon a{color:var(--brass-2); font-weight:700}
+
+/* ------------------------------------------------------------------ topbar */
+.topbar{
+  display:flex; align-items:center; gap:14px; padding:12px 30px;
+  border-bottom:1px solid var(--line); background:rgba(251,248,240,.88);
+  backdrop-filter:blur(8px); position:sticky; top:0; z-index:40;
+}
+.hamburger{
+  display:none; border:1px solid var(--line); background:var(--card); color:var(--ink);
+  width:34px; height:34px; border-radius:9px; font-size:15px; cursor:pointer; flex:none;
+}
+.crumbs{font-size:13px; color:var(--mut)}
+.crumbs b{color:var(--ink); font-weight:800}
+.spacer{flex:1}
+
+.tierpill{
+  display:flex; align-items:center; gap:8px; cursor:pointer; user-select:none;
+  border:1px solid var(--line); background:var(--card); padding:6px 12px;
+  border-radius:999px; font-size:12.5px; box-shadow:var(--sh);
+}
+.tierpill:hover{border-color:var(--green); background:#fff}
+.tierpill .dot{width:8px;height:8px;border-radius:50%;background:var(--good); flex:none}
+.tierpill b{font-weight:800}
+.tierpill .cfg{
+  font-style:normal; font-size:9.5px; font-family:var(--mono); color:var(--brass-2);
+  background:var(--brass-wash); padding:1px 5px; border-radius:5px; margin-left:3px;
+}
+.tierpill .price{color:var(--mut); margin-left:4px; font-family:var(--mono); font-size:11.5px}
+.tierpill .chev{color:var(--mut); font-size:11px}
+
+.who{display:flex; align-items:center; gap:9px; font-size:12.2px; line-height:1.3}
+.who .av{
+  width:32px;height:32px;border-radius:50%; display:grid;place-items:center;
+  background:linear-gradient(150deg,var(--green),var(--green-2)); color:#fff; font-weight:800; font-size:11.5px; flex:none;
+}
+
+/* ------------------------------------------------------- the configurator */
+.tiermenu{
+  position:absolute; right:120px; top:56px; width:520px; max-height:74vh; overflow-y:auto;
+  background:var(--card); border:1px solid var(--line); border-radius:var(--r-lg);
+  box-shadow:var(--sh-lg); z-index:60; display:none; padding:6px;
+}
+.tiermenu.open{display:block}
+.tm-head{padding:12px 12px 10px; font-size:12.3px; color:var(--ink-2); line-height:1.55; border-bottom:1px solid var(--line-2)}
+.tm-sub{
+  padding:13px 12px 7px; font-size:9.5px; letter-spacing:.13em; text-transform:uppercase;
+  color:var(--mut); font-weight:800;
+}
+.tieropt{padding:10px 12px; border-radius:10px; cursor:pointer; border:1px solid transparent}
+.tieropt:hover{background:var(--sunk)}
+.tieropt.on{background:var(--green-wash); border-color:rgba(31,93,63,.3)}
+.to-top{display:flex; justify-content:space-between; align-items:baseline; gap:10px}
+.to-name{font-weight:800; font-size:14px}
+.to-price{font-family:var(--mono); font-size:11.5px; color:var(--green-2); font-weight:600}
+.to-desc{font-size:12px; color:var(--ink-2); margin-top:3px; line-height:1.5}
+.to-base{font-size:11px; color:var(--mut); margin-top:3px}
+
+.roomlist{display:flex; flex-direction:column; gap:1px}
+.roomrow{
+  display:grid; grid-template-columns:22px 1fr auto; gap:8px; align-items:center;
+  padding:7px 10px; border-radius:9px; cursor:pointer; font-size:12.6px;
+}
+.roomrow:hover{background:var(--sunk)}
+.rr-box{
+  width:17px;height:17px;border-radius:5px; border:1.5px solid var(--line);
+  display:grid;place-items:center; font-size:10px; color:transparent; background:#fff;
+}
+.roomrow.on .rr-box{background:var(--green); border-color:var(--green); color:#fff}
+.roomrow:not(.on) .rr-box{color:var(--mut)}
+.rr-name{font-weight:700}
+.rr-flag{
+  font-style:normal; font-size:9px; font-family:var(--mono); padding:1px 4px;
+  border-radius:4px; margin-left:5px; vertical-align:1px;
+}
+.rr-flag.add{background:var(--good-w); color:var(--good)}
+.rr-flag.off{background:var(--bad-w); color:var(--bad)}
+.rr-price{font-family:var(--mono); font-size:11px; color:var(--ink-2); text-align:right; line-height:1.3}
+.rr-price i{display:block; font-style:normal; font-size:9.5px; color:var(--mut)}
+.rr-why{grid-column:2/4; font-size:11px; color:var(--mut); line-height:1.45; margin-top:-2px}
+
+.tm-total{margin:8px 4px 4px; padding:11px 12px; background:var(--sunk); border-radius:11px}
+.tt-line{display:flex; justify-content:space-between; font-size:12.3px; padding:2px 0; color:var(--ink-2)}
+.tt-line b{font-family:var(--mono); font-weight:600}
+.tt-line.add b{color:var(--good)}
+.tt-line.off b{color:var(--bad)}
+.tt-line.grand{
+  border-top:1px solid var(--line); margin-top:6px; padding-top:8px;
+  font-size:13.5px; color:var(--ink); font-weight:800;
+}
+.tt-line.grand b{color:var(--green-2)}
+.tt-save{font-size:11.3px; color:var(--good); margin-top:7px; line-height:1.5}
+.tt-draft{font-size:10.5px; color:var(--mut); margin-top:6px; font-style:italic}
+
+/* -------------------------------------------------------------- page heads */
+.pagehead{display:flex; align-items:flex-start; gap:18px; margin:4px 0 20px}
+.pagehead h1{font-family:var(--serif); font-weight:600; font-size:25px; letter-spacing:-.01em}
+.pagehead .sub{font-size:13.2px; color:var(--mut); margin-top:6px; max-width:80ch; line-height:1.55}
+.pagehead-actions{margin-left:auto; display:flex; gap:8px; align-items:center; flex:none}
+
+/* ------------------------------------------------------------------- cards */
+.card{
+  background:var(--card); border:1px solid var(--line); border-radius:var(--r-lg);
+  padding:17px 18px; box-shadow:var(--sh); margin-bottom:16px;
+}
+.card > h2{font-size:15px; margin-bottom:3px}
+.card > .card-sub{font-size:12.2px; color:var(--mut); margin-bottom:13px; line-height:1.55}
+.grid{display:grid; gap:16px}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.g3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.g4{grid-template-columns:repeat(4,minmax(0,1fr))}
+@media(max-width:1100px){.g3,.g4{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* ------------------------------------------------------------------- stats */
+.statrow{display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:11px}
+.stat{
+  background:var(--card); border:1px solid var(--line); border-radius:var(--r);
+  padding:13px 14px; border-left:3px solid var(--line);
+}
+.stat .s-l{font-size:10.5px; letter-spacing:.09em; text-transform:uppercase; color:var(--mut); font-weight:800}
+.stat .s-v{font-size:22px; font-weight:800; letter-spacing:-.028em; margin-top:5px; font-family:var(--mono)}
+.stat .s-n{font-size:11.2px; color:var(--mut); margin-top:4px; line-height:1.45}
+.stat.good{border-left-color:var(--good)} .stat.good .s-v{color:var(--green-2)}
+.stat.watch{border-left-color:var(--watch)} .stat.watch .s-v{color:var(--brass-2)}
+.stat.bad{border-left-color:var(--bad)} .stat.bad .s-v{color:var(--bad)}
+.stat.headline{border-left-width:4px; background:linear-gradient(180deg,var(--green-wash),var(--card))}
+.stat.headline .s-v{font-size:26px; color:var(--green-2)}
+
+/* ------------------------------------------------------------------ tables */
+table{width:100%; border-collapse:collapse; font-size:12.8px}
+thead th{
+  text-align:left; font-size:10px; letter-spacing:.1em; text-transform:uppercase;
+  color:var(--mut); font-weight:800; padding:0 10px 7px; border-bottom:1px solid var(--line);
+  white-space:nowrap;
+}
+tbody td{padding:9px 10px; border-bottom:1px solid var(--line-2); vertical-align:top}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover{background:rgba(31,93,63,.035)}
+td.num,th.num{text-align:right; font-family:var(--mono); white-space:nowrap}
+td.k{font-family:var(--mono); font-size:11.8px; color:var(--ink-2); white-space:nowrap}
+.t-main{font-weight:700}
+.t-sub{font-size:11.2px; color:var(--mut); margin-top:2px; line-height:1.45}
+
+/* -------------------------------------------------------------------- tags */
+.tag{
+  display:inline-block; font-size:10.5px; padding:2px 8px; border-radius:999px;
+  background:var(--sunk); color:var(--ink-2); font-weight:800; white-space:nowrap;
+}
+.tag.good{background:var(--good-w); color:var(--green-2)}
+.tag.watch{background:var(--watch-w); color:var(--brass-2)}
+.tag.bad{background:var(--bad-w); color:var(--bad)}
+.tag.mono{font-family:var(--mono); font-size:10px; font-weight:600}
+.tag.ghost{background:transparent; border:1px solid var(--line); color:var(--mut)}
+.tag.dot::before{content:"●"; margin-right:5px; font-size:8px; vertical-align:1px}
+
+/* the assumption/estimate marker — used to tag model estimates honestly */
+.est{
+  display:inline-block; font-family:var(--mono); font-size:9px; letter-spacing:.05em;
+  padding:1px 5px; border-radius:4px; font-weight:700; background:var(--watch-w); color:var(--brass-2);
+  vertical-align:1px; margin-left:5px;
+}
+
+/* ------------------------------------------------------------------ inputs */
+label.f{display:block; font-size:11px; letter-spacing:.07em; text-transform:uppercase;
+  color:var(--mut); font-weight:800; margin-bottom:5px}
+input,select,textarea{
+  width:100%; padding:9px 11px; border:1px solid var(--line); border-radius:10px;
+  background:#fff; color:var(--ink); font-family:inherit; font-size:13px;
+}
+input:focus,select:focus,textarea:focus{outline:none; border-color:var(--green); box-shadow:0 0 0 3px var(--green-wash)}
+input[type=range]{padding:0; border:none; background:transparent; accent-color:var(--green)}
+.field{margin-bottom:13px}
+.btn{
+  display:inline-flex; align-items:center; gap:6px; padding:9px 15px; border-radius:10px;
+  border:1px solid var(--ink); background:var(--ink); color:var(--paper);
+  font-size:13px; font-weight:800; cursor:pointer; text-decoration:none;
+}
+.btn:hover{background:#141a13}
+.btn.ghost{background:transparent; color:var(--ink); border-color:var(--line)}
+.btn.ghost:hover{background:var(--sunk); border-color:var(--green)}
+.btn.green{background:var(--green); border-color:var(--green); color:#fff}
+.btn.green:hover{background:var(--green-2); border-color:var(--green-2)}
+.btn.brass{background:var(--brass); border-color:var(--brass); color:#fff}
+.btn.brass:hover{background:var(--brass-2); border-color:var(--brass-2)}
+.btn.sm{padding:6px 11px; font-size:12px}
+
+/* -------------------------------------------------------------- the fences */
+.fence{
+  border-left:3px solid var(--green); background:var(--green-wash);
+  padding:11px 14px; border-radius:0 11px 11px 0; font-size:12.4px;
+  color:var(--ink-2); line-height:1.55;
+}
+.fence b{color:var(--ink)}
+.fence.brass{border-left-color:var(--brass); background:var(--brass-wash)}
+.fence.plum{border-left-color:var(--bad); background:var(--bad-w)}
+.srcnote{font-size:10.8px; color:var(--mut); margin-top:8px; font-style:italic; line-height:1.5}
+.muted{color:var(--mut)} .small{font-size:11.5px}
+.mono{font-family:var(--mono)}
+
+/* ------------------------------------------------------------- the bus log */
+.bus{display:flex; flex-direction:column; gap:0; font-size:12.4px}
+.busrow{display:grid; grid-template-columns:52px 1fr; gap:11px; padding:8px 0; border-bottom:1px solid var(--line-2)}
+.busrow:last-child{border-bottom:none}
+.bus-t{font-family:var(--mono); font-size:10.5px; color:var(--mut); padding-top:2px}
+.bus-topic{font-family:var(--mono); font-size:10px; color:var(--green-2); letter-spacing:.02em}
+.bus-from{font-size:11.3px; color:var(--mut); margin:2px 0}
+.bus-from b{color:var(--ink-2); font-weight:700}
+.bus-body{line-height:1.55; color:var(--ink-2)}
+.busrow.conclude .bus-body{color:var(--ink); font-weight:600}
+.busrow.conclude{background:var(--good-w); border-radius:9px; padding:9px 11px; border-bottom:none; margin:3px 0}
+.busrow.reject{background:var(--bad-w); border-radius:9px; padding:9px 11px; border-bottom:none; margin:3px 0}
+
+/* the confidence meter */
+.conf{display:flex; align-items:center; gap:9px; margin-top:8px; font-size:11.5px; flex-wrap:wrap}
+.conf-bar{flex:1; height:6px; background:var(--sunk); border-radius:3px; overflow:hidden; position:relative; max-width:220px}
+.conf-fill{height:100%; border-radius:3px; background:var(--good)}
+.conf-fill.under{background:var(--bad)}
+.conf-gate{position:absolute; top:-2px; bottom:-2px; width:2px; background:var(--ink)}
+.conf-n{font-family:var(--mono); font-weight:800}
+
+/* reason chips */
+.reasons{list-style:none; padding:0; margin:9px 0 0; display:flex; flex-direction:column; gap:5px}
+.reasons li{display:flex; gap:8px; font-size:12.2px; line-height:1.55; color:var(--ink-2)}
+.rtag{
+  font-family:var(--mono); font-size:9px; letter-spacing:.06em; padding:2px 5px; border-radius:4px;
+  height:fit-content; flex:none; margin-top:2px; font-weight:700;
+}
+.rtag.data{background:var(--good-w); color:var(--good)}
+.rtag.assumption{background:var(--watch-w); color:var(--brass-2)}
+
+/* ------------------------------------------------------------------ toasts */
+#toast-wrap{position:fixed; bottom:20px; right:20px; z-index:200; display:flex; flex-direction:column; gap:8px}
+.toast{
+  background:var(--ink); color:var(--paper); padding:10px 15px; border-radius:10px;
+  font-size:12.8px; box-shadow:var(--sh-lg); transition:opacity .25s; max-width:400px;
+}
+.toast.ok{border-left:3px solid var(--brass-3)}
+
+/* ------------------------------------------------------------------ footer */
+.ae-credit{
+  padding:18px 30px 26px; font-size:11.5px; color:var(--mut);
+  border-top:1px solid var(--line); margin-top:auto;
+}
+.ae-credit b{color:var(--ink-2)}
+
+/* --------------------------------------------------------------- utilities */
+.row{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
+.between{display:flex; justify-content:space-between; align-items:center; gap:12px}
+.stack{display:flex; flex-direction:column; gap:10px}
+.empty{padding:26px; text-align:center; color:var(--mut); font-size:12.6px}
+.divider{height:1px; background:var(--line-2); margin:13px 0}
+.bar{height:6px; background:var(--sunk); border-radius:3px; overflow:hidden}
+.bar i{display:block; height:100%; background:var(--green); border-radius:3px}
+.bar i.brass{background:var(--brass)}
+.bar i.plum{background:var(--bad)}
+
+/* ================================================= the mobile bottom nav bar
+   The off-canvas drawer + frosted bottom bar. On narrow viewports the sidebar
+   slides away and this bar carries the key rooms, so content is never pushed
+   down (the sidebar-shoves-content bug). */
+.mobilebar{
+  display:none; position:fixed; left:0; right:0; bottom:0; z-index:120;
+  background:rgba(251,248,240,.93); backdrop-filter:blur(12px);
+  border-top:1px solid var(--line); padding:6px 6px calc(6px + env(safe-area-inset-bottom));
+  justify-content:space-around; box-shadow:0 -6px 24px -14px rgba(28,42,34,.4);
+}
+.mb-link{
+  display:flex; flex-direction:column; align-items:center; gap:2px; flex:1;
+  text-decoration:none; color:var(--mut); font-size:9.5px; font-weight:800;
+  background:none; border:none; padding:5px 2px; border-radius:10px; cursor:pointer;
+}
+.mb-link .mb-ic{font-size:17px; line-height:1}
+.mb-link.active{color:var(--green-2)}
+.mb-menu .mb-ic{color:var(--ink)}
+
+/* ---------------------------------------------------------- responsive nav */
+@media(max-width:900px){
+  .app{grid-template-columns:1fr}
+  .sidebar{
+    position:fixed; left:0; top:0; bottom:0; width:264px; z-index:200;
+    transform:translateX(-100%); transition:transform .22s ease; height:100vh;
+  }
+  .sidebar.open{transform:translateX(0)}
+  .hamburger{display:inline-flex; align-items:center; justify-content:center}
+  .mobilebar{display:flex}
+  .content{padding:18px 16px 84px}      /* leave room for the bottom bar */
+  .tiermenu{right:8px; left:8px; width:auto}
+  .who{display:none}
+}
+@media(max-width:760px){
+  .g2,.g3,.g4{grid-template-columns:1fr}
+  .pagehead{flex-direction:column; gap:10px}
+  .pagehead-actions{margin-left:0}
+  .ribbon,.topbar{padding-left:16px; padding-right:16px}
+}
+
+/* Brand mark: the real live OS icon IS the logo; the inline mark only shows if
+   the icon URL fails to load (onerror fallback only — never the primary). */
+.bmark img{width:100%;height:100%;object-fit:cover;border-radius:inherit;display:block}
+.bmark.fallback img{display:none}
+.bmark.fallback .fallback-mark{display:block !important}

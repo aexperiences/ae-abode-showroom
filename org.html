@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Agent Org · Event Bus · Abode OS</title>
+<meta name="description" content="Abode OS — the operating system for a real estate brokerage. Powered by Accelerated Experiences LLC.">
+<link rel="icon" href="https://www.aexperiences.com/Abode_OS.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,500;9..144,600&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="abode.css">
+</head>
+<body>
+<script src="abode.js"></script>
+<script>
+(function () {
+  var A = window.Abode;
+  var c = A.mount({ active: "org.html", crumb: "Agent Org · Event Bus" });
+
+  var COO   = A.SEATS.coo;
+  var DEPTS = A.SEATS.depts;
+  function byKey(k) { return DEPTS.filter(function (x) { return x.key === k; })[0]; }
+
+  c.appendChild(A.page(
+    "Agent Org · Event Bus",
+    "Ten departments, each one a five-seat chain, all of it visible. Harper routes and gates at the top. " +
+    "Every hop underneath her is published to the bus in the open — including the ones that get held back.",
+    '<button class="btn green sm" id="toHarper">Ask Harper</button>'
+  ));
+
+  /* ------------------------------------------------- the honest note, up top */
+  c.appendChild(A.card(
+    '<h2>What is actually running on this page</h2>' +
+    '<div class="card-sub">Said plainly, before anything below it.</div>' +
+    '<div class="fence"><b>The brain on this page is a deterministic local stand-in.</b> ' +
+    'This showroom is browser-only: there is no server behind it, no API key, and no model call. ' +
+    'Every stance, confidence figure and reason you see is computed by fixed code from this tab\'s own seeded ' +
+    'data, so the same question always returns the same answer.<br><br>' +
+    '<b>The real engine runs server-side on DeepSeek.</b> Same chain, same seats, same confidence gates, ' +
+    'same Output Contract — with a language model in the seats instead of a stand-in. What the showroom is ' +
+    'faithful about is the <i>structure</i>: who talks to whom, what gets held back, and what a released ' +
+    'conclusion has to carry with it.</div>' +
+    '<div class="divider"></div>' +
+    '<div class="row">' +
+      A.tag("local stand-in brain", "ghost") +
+      A.tag("server-side engine: DeepSeek", "ghost") +
+      A.tag("deterministic — no randomness", "ghost") +
+      A.tag("session-only, resets when you leave", "ghost") +
+      A.tag("Ghost Mode: nothing sends, spends or moves money", "watch") +
+    '</div>'
+  ));
+
+  /* -------------------------------------------------------- Harper, the COO */
+  var samples = [
+    "What is our company dollar and why?",
+    "Which files are blocked in compliance?",
+    "Who is about to cap out?",
+    "Is anyone's license about to lapse?",
+    "Which listing is stale and needs a reduction?"
+  ];
+
+  c.appendChild(A.card(
+    '<div class="between"><div>' +
+      '<h2>' + A.esc(COO.name) + ' · ' + A.esc(COO.role) + '</h2>' +
+      '<div class="card-sub">' + A.esc(COO.line) + '</div>' +
+    '</div><div class="row">' + A.tag(COO.tier, "watch") + A.tag(COO.dept, "ghost") + '</div></div>' +
+    '<div class="grid g2">' +
+      '<div><table><thead><tr><th>Harper does</th></tr></thead><tbody>' +
+        '<tr><td>Takes the ask off the Broker-Owner\'s desk and reads it.</td></tr>' +
+        '<tr><td>Routes it to exactly one department chain — never two at once.</td></tr>' +
+        '<tr><td>Lets that chain work under <i>its own</i> confidence bar.</td></tr>' +
+        '<tr><td>Packages one clean answer back up, reasons attached.</td></tr>' +
+        '<tr><td>Sets the follow-up when something is held.</td></tr>' +
+      '</tbody></table></div>' +
+      '<div><table><thead><tr><th>Harper does not</th></tr></thead><tbody>' +
+        '<tr><td>Do the department\'s work. She never prices, drafts or reads the contract herself.</td></tr>' +
+        '<tr><td>Overrule a Pacemaker. If the chain held it, it stays held.</td></tr>' +
+        '<tr><td>Invent a number. An unsourced figure gets tagged as an assumption or dropped.</td></tr>' +
+        '<tr><td>Send, spend, publish or move money. Those are Fences — they go to the Approval Desk.</td></tr>' +
+        '<tr><td>Reach the Broker-Owner for anything the org can honestly clear itself.</td></tr>' +
+      '</tbody></table></div>' +
+    '</div>' +
+    '<div class="divider"></div>' +
+    '<div class="row" style="margin-bottom:12px">' +
+      '<input id="qh" placeholder="Ask the COO anything — she routes it to the right chain." style="flex:1;min-width:260px">' +
+      '<button class="btn green" id="goh">Route it</button>' +
+    '</div>' +
+    '<div class="row" style="gap:6px;margin-bottom:4px">' +
+      samples.map(function (s) {
+        return '<button class="btn ghost sm exq" data-q="' + A.esc(s) + '">' + A.esc(s) + '</button>';
+      }).join("") +
+    '</div>' +
+    '<div id="outh"></div>'
+  ));
+
+  /* ------------------------------------------------------ the hierarchy rules */
+  var LADDER = [
+    { rung:"Broker-Owner", seat:"Ruth Calder · human · Designated Broker",
+      rule:"The only seat that signs, spends, sends or authorizes a disbursement. The org exists to keep this desk clear, not to fill it." },
+    { rung:"COO", seat:A.esc(COO.name) + " · apex of the org",
+      rule:"Single gate between the department heads and the Broker-Owner. Routes, gates, packages. Defers upward only behind a Fence." },
+    { rung:"DH", seat:"Department Head · one per department",
+      rule:"Owns the “so what” for the department. Called to the Source of Truth and reads it before acting." },
+    { rung:"AE", seat:"Administrative Executive · one per department",
+      rule:"Packages the ask, files it, sets the follow-up. Coordinates laterally with the AE of another department — same position only. Cross-position always routes back through the chain." },
+    { rung:"Event Bus", seat:"The open channel",
+      rule:"Every hop is published here. Nothing moves off-bus, so a conclusion can always be traced back to the seat that made it." },
+    { rung:"Pacemaker", seat:"One per department",
+      rule:"The only voice out of the triad. Releases at or above the department bar; below it, holds with reasons and routes the hold upward." },
+    { rung:"Triad", seat:"Pacemaker + two opposing lenses",
+      rule:"The two lenses argue opposite sides and never confer with each other. Each answers to the Pacemaker alone — that is what keeps the disagreement real." }
+  ];
+
+  var seatCount = DEPTS.length * 5 + 1;
+  var g80 = DEPTS.filter(function (d) { return d.gate === 80; });
+  var g85 = DEPTS.filter(function (d) { return d.gate === 85; });
+
+  c.appendChild(A.card(
+    '<div class="between"><div>' +
+      '<h2>The chain, top to bottom</h2>' +
+      '<div class="card-sub">Broker-Owner → COO → DH → AE → Event Bus → Pacemaker → Triad. ' +
+      'The order is the point: a conclusion cannot skip a rung, and every rung leaves a record.</div>' +
+    '</div><div>' + A.tag(A.money(A.ROOMS.org.mo) + "/mo · " + A.money(A.ROOMS.org.build) + " build · draft", "ghost") + '</div></div>' +
+    '<div class="statrow" style="margin-bottom:14px">' +
+      A.stat("Departments", DEPTS.length, "Each one a full five-seat chain") +
+      A.stat("Seats in the org", seatCount, "50 department seats + the COO") +
+      A.stat("Bar at 80%", g80.length, "The standard release gate") +
+      A.stat("Bar at 85%", g85.length, "Money + the two Compliance chains — a bluffed number or a bad compliance read poisons everything", "watch") +
+    '</div>' +
+    '<table><thead><tr><th>Rung</th><th>Seat</th><th>The rule</th></tr></thead><tbody>' +
+    LADDER.map(function (r) {
+      return '<tr><td class="k">' + A.esc(r.rung) + '</td>' +
+        '<td><div class="t-main">' + r.seat + '</div></td>' +
+        '<td>' + r.rule + '</td></tr>';
+    }).join("") +
+    '</tbody></table>' +
+    '<div class="divider"></div>' +
+    '<div class="fence"><b>The gate is the whole trick.</b> A department releases only when its Pacemaker clears ' +
+    'the bar — ' + g80.length + ' departments at 80%, and ' +
+    g85.map(function (d) { return A.esc(d.name); }).join(", ") + ' at 85%, because a wrong commission number and a ' +
+    'bad compliance read both pollute everything downstream. Under the bar, the answer still comes out — as a hold, ' +
+    'with its reasons, routed to a human.</div>' +
+    '<div class="divider"></div>' +
+    '<div class="fence brass"><b>Multi-tier permissions.</b> The same org answers three scopes: an <b>agent</b> ' +
+    'sees only their own book, a <b>team lead</b> sees the team, and the <b>managing broker</b> sees the whole firm ' +
+    '— transactions, the compliance log and the financials. The chain is one; what it will show you depends on your seat.</div>'
+  ));
+
+  /* --------------------------------------------------- the ten departments */
+  var SAMPLE = {
+    leadgen:      "Where should this month's leads actually be routed?",
+    crm:          "Which contact should we call today, not email?",
+    transactions: "Which files are blocked before clear-to-close?",
+    money:        "What is our company dollar, and is the DA ready?",
+    listings:     "Which listing is stale and needs a reduction?",
+    recruiting:   "Which recruit is worth the Broker-Owner's time?",
+    analytics:    "How concentrated is our volume in one agent?",
+    hr:           "Is anyone's license about to lapse?",
+    it:           "Is anything on the system watch list?",
+    law:          "Which matters need a real attorney before anything runs?"
+  };
+
+  function seatRows(dp) {
+    var seats = [
+      { k:"DH",        n:dp.dh.name,    l:dp.dh.line },
+      { k:"AE",        n:dp.ae.name,    l:dp.ae.line },
+      { k:"Pacemaker", n:dp.pace.name,  l:dp.pace.line },
+      { k:"Lens A",    n:dp.lensA.name, l:dp.lensA.line },
+      { k:"Lens B",    n:dp.lensB.name, l:dp.lensB.line }
+    ];
+    return seats.map(function (s) {
+      return '<tr><td class="k">' + A.esc(s.k) + '</td>' +
+        '<td><div class="t-main">' + A.esc(s.n) + '</div>' +
+        '<div class="t-sub">' + A.esc(s.l) + '</div></td></tr>';
+    }).join("");
+  }
+
+  var deptGrid = document.createElement("div"); deptGrid.className = "grid g2";
+  DEPTS.forEach(function (dp) {
+    var inner =
+      '<div class="between"><div>' +
+        '<h2>' + A.esc(dp.name) + '</h2>' +
+        '<div class="card-sub">' + A.esc(dp.dh.name) + ' → ' + A.esc(dp.ae.name) + ' → the bus → ' +
+        A.esc(dp.pace.name) + ' → ' + A.esc(dp.lensA.name) + ' / ' + A.esc(dp.lensB.name) + '</div>' +
+      '</div><div>' + A.tag("bar " + dp.gate + "%", dp.gate > 80 ? "watch" : "ghost") + '</div></div>' +
+      '<table><thead><tr><th>Seat</th><th>Who, and what they own</th></tr></thead><tbody>' +
+      seatRows(dp) + '</tbody></table>' +
+      '<div class="divider"></div>' +
+      '<div class="row">' +
+        '<input id="q_' + dp.key + '" placeholder="' + A.esc(SAMPLE[dp.key] || "Ask this department") +
+          '" style="flex:1;min-width:200px">' +
+        '<button class="btn sm" data-consult="' + A.esc(dp.key) + '">Consult</button>' +
+      '</div>' +
+      '<div id="out_' + dp.key + '"></div>';
+    var cardEl = A.card(inner);
+    cardEl.style.borderLeft = "3px solid var(--a-" + dp.accent + ")";
+    deptGrid.appendChild(cardEl);
+  });
+  c.appendChild(deptGrid);
+
+  /* ------------------------------------------------------- the live event bus */
+  c.appendChild(A.card(
+    '<div class="between"><div>' +
+      '<h2>Live event bus</h2>' +
+      '<div class="card-sub">Every hop of every consult on this page, newest last. Read it top to bottom and you ' +
+      'can see the SSOT get read, the AE package the ask, both lenses argue, and the Pacemaker either release ' +
+      'or hold. Nothing moves off this bus.</div>' +
+    '</div><div class="row" style="flex:none;flex-wrap:nowrap">' +
+      '<button class="btn ghost sm" id="busRefresh">Refresh</button>' +
+      '<button class="btn ghost sm" id="busClear">Clear the bus</button>' +
+    '</div></div>' +
+    '<div id="busbox" class="bus" style="max-height:520px;overflow-y:auto"></div>' +
+    '<div class="divider"></div>' +
+    '<div class="fence"><b>Ghost Mode.</b> A released conclusion is a conclusion, not an action. ' +
+    'Nothing on this page has sent, spent, published or moved money — anything that would goes to the ' +
+    'Approval Desk as a staged item for the Broker-Owner. <a href="approvals.html">Open the desk →</a></div>'
+  ));
+
+  /* ---------------------------------------------------------------- renderers */
+  function contractHTML(dp, verdict, passed, headline, topic, routedBy) {
+    var pctv = Math.max(0, Math.min(100, Number(verdict.conf) || 0));
+    return '<div class="divider"></div>' +
+      '<div class="' + (passed ? "busrow conclude" : "busrow reject") + '" style="display:block">' +
+        '<div class="bus-topic">' + A.esc(topic) + '</div>' +
+        '<div class="bus-from"><b>' + A.esc(dp.pace.name) + '</b> (Pacemaker) → ' +
+          A.esc(passed ? dp.ae.name + " (AE) → " + COO.name + " (COO)" : COO.name + " (COO) → the Broker-Owner") + '</div>' +
+        '<div class="bus-body" style="margin-top:5px">' + A.esc(headline) + '</div>' +
+      '</div>' +
+      '<div class="conf">' +
+        '<span class="muted small">' + A.esc(dp.name) + ' · bar ' + dp.gate + '%</span>' +
+        '<span class="conf-bar"><i class="conf-fill ' + (passed ? "" : "under") + '" style="width:' + pctv + '%"></i>' +
+        '<span class="conf-gate" style="left:' + dp.gate + '%"></span></span>' +
+        '<span class="conf-n">' + A.esc(verdict.conf) + '%</span>' +
+        '<span class="muted small">' + (passed ? "released" : "held — needs a human") + '</span>' +
+      '</div>' +
+      '<ul class="reasons">' + verdict.reasons.map(function (x) {
+        return '<li><span class="rtag ' + A.esc(x.t) + '">' + A.esc(x.t.toUpperCase()) + '</span>' +
+               '<span>' + A.esc(x.s) + '</span></li>';
+      }).join("") + '</ul>' +
+      '<div class="srcnote">' + A.esc(routedBy) + ' Routed through ' + A.esc(dp.dh.name) + ' (DH) → ' +
+        A.esc(dp.ae.name) + ' (AE) → the bus → ' + A.esc(dp.pace.name) + ' (Pacemaker) → ' +
+        A.esc(dp.lensA.name) + ' / ' + A.esc(dp.lensB.name) +
+        ' (opposing lenses, which never confer). Full trace on the bus below.</div>' +
+      '<div class="row" style="margin-top:11px">' +
+        '<button class="btn ghost sm" data-stage="1">Stage this to the Approval Desk</button>' +
+        '<span class="muted small">Staging files it for the Broker-Owner. It does not send, spend or move money.</span>' +
+      '</div>';
+  }
+
+  function wireStage(host, dp, verdict, passed) {
+    var btn = host.querySelector("[data-stage]");
+    if (!btn) return;
+    btn.addEventListener("click", function () {
+      A.stage(
+        passed ? "general" : "escalation",
+        dp.name + " — " + (passed ? "released conclusion" : "held below the " + dp.gate + "% bar"),
+        verdict.stance,
+        passed
+          ? "Ghost Mode: the showroom never sends, spends or moves money. Filed for the Broker-Owner to act on."
+          : "Came in at " + verdict.conf + "% against a " + dp.gate + "% bar. Needs a human.",
+        dp.pace.name + " (Pacemaker · " + dp.name + ")"
+      );
+      btn.disabled = true;
+      btn.textContent = "Staged to the Approval Desk ✓";
+      A.toast("Staged to the Approval Desk — nothing was sent, spent or moved.", "ok");
+    });
+  }
+
+  function busRowHTML(e) {
+    var cls = e.kind === "conclude" ? "busrow conclude" : (e.kind === "reject" ? "busrow reject" : "busrow");
+    var meter = "";
+    if (e.verdict && e.gate) {
+      var passed = e.kind !== "reject";
+      var pctv = Math.max(0, Math.min(100, Number(e.verdict.conf) || 0));
+      meter = '<div class="conf">' +
+        '<span class="muted small">bar ' + A.esc(e.gate) + '%</span>' +
+        '<span class="conf-bar"><i class="conf-fill ' + (passed ? "" : "under") + '" style="width:' + pctv + '%"></i>' +
+        '<span class="conf-gate" style="left:' + A.esc(e.gate) + '%"></span></span>' +
+        '<span class="conf-n">' + A.esc(e.verdict.conf) + '%</span></div>';
+    }
+    return '<div class="' + cls + '">' +
+      '<div class="bus-t">' + A.esc(e.stamp || "") + '</div>' +
+      '<div>' +
+        '<div class="bus-topic">' + A.esc(e.topic) + '</div>' +
+        '<div class="bus-from"><b>' + A.esc(e.from) + '</b> → ' + A.esc(e.to) + '</div>' +
+        '<div class="bus-body">' + A.esc(e.body) + '</div>' + meter +
+      '</div></div>';
+  }
+
+  function renderBus() {
+    var box = document.getElementById("busbox");
+    if (!box) return;
+    var bus = A.db().bus || [];
+    if (!bus.length) {
+      box.innerHTML = '<div class="empty">The bus is quiet. Ask Harper above, or consult a department — ' +
+        'every hop lands here, oldest first, newest last.</div>';
+      return;
+    }
+    box.innerHTML = bus.map(busRowHTML).join("");
+    box.scrollTop = box.scrollHeight;
+  }
+
+  /* ------------------------------------------------------------------ wiring */
+  function runConsult(key) {
+    var dp = byKey(key);
+    if (!dp) return;
+    var input = document.getElementById("q_" + key);
+    var q = (input && input.value.trim()) || SAMPLE[key] || "Department review";
+    if (input) input.value = q;
+    var r = A.consult(key, q);
+    if (!r) { A.toast("That department is not wired in this build.", ""); return; }
+    var head = r.passed
+      ? r.verdict.stance
+      : "Held below the " + dp.gate + "% bar at " + r.verdict.conf + "%. " + COO.name +
+        " routes it up with the reasons attached rather than bluffing it. " + r.verdict.stance;
+    var out = document.getElementById("out_" + key);
+    out.innerHTML = contractHTML(
+      dp, r.verdict, r.passed, head,
+      r.passed ? (key + ".pacemaker.released") : "escalation.below_bar",
+      "Consulted directly, without going through the COO."
+    );
+    wireStage(out, dp, r.verdict, r.passed);
+    renderBus();
+    A.toast(r.passed
+      ? dp.pace.name + " released at " + r.verdict.conf + "% — " + r.events.length + " events on the bus."
+      : dp.pace.name + " held it at " + r.verdict.conf + "% — escalated on the bus.", "ok");
+  }
+
+  function askHarper(q) {
+    if (!q) { A.toast("Type a question first.", ""); return; }
+    var a = A.askHarper(q);
+    var dp = a.dept;
+    var out = document.getElementById("outh");
+    out.innerHTML = contractHTML(
+      dp, a.result.verdict, a.result.passed, a.packaged,
+      a.result.passed ? "coo.released" : "escalation.below_bar",
+      COO.name + " read the ask and routed it to " + dp.name + " herself."
+    );
+    wireStage(out, dp, a.result.verdict, a.result.passed);
+    renderBus();
+    A.toast(COO.name + " routed it to " + dp.name + ".", "ok");
+  }
+
+  setTimeout(function () {
+    var q = document.getElementById("qh");
+    document.getElementById("goh").addEventListener("click", function () { askHarper(q.value.trim()); });
+    q.addEventListener("keydown", function (e) { if (e.key === "Enter") askHarper(this.value.trim()); });
+    Array.prototype.forEach.call(document.querySelectorAll(".exq"), function (b) {
+      b.addEventListener("click", function () { q.value = this.dataset.q; askHarper(this.dataset.q); });
+    });
+    Array.prototype.forEach.call(document.querySelectorAll("[data-consult]"), function (b) {
+      b.addEventListener("click", function () { runConsult(this.dataset.consult); });
+    });
+    Array.prototype.forEach.call(document.querySelectorAll('[id^="q_"]'), function (i) {
+      i.addEventListener("keydown", function (e) { if (e.key === "Enter") runConsult(this.id.slice(2)); });
+    });
+    document.getElementById("busRefresh").addEventListener("click", function () {
+      renderBus(); A.toast((A.db().bus || []).length + " events on the bus.", "ok");
+    });
+    document.getElementById("busClear").addEventListener("click", function () {
+      A.save(function (d) { d.bus = []; }); renderBus();
+      A.toast("Bus cleared. Nothing else was touched.", "ok");
+    });
+    var t = document.getElementById("toHarper");
+    if (t) t.addEventListener("click", function () {
+      if (q.scrollIntoView) q.scrollIntoView({ behavior: "smooth", block: "center" });
+      q.focus();
+    });
+    renderBus();
+  }, 0);
+})();
+</script>
+</body>
+</html>
