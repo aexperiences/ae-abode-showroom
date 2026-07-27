@@ -1296,3 +1296,29 @@
     page:page, card:card, stat:stat, tag:tag, srcNote:srcNote, bar:bar, brandMark:brandMark
   };
 })(window);
+
+/* ============================================================================
+   AE mobile drawer enhancer (Jul 27 2026) — progressive enhancement.
+   Injects a hamburger + scrim + toggle so any shell with .app/.sidebar/.topbar
+   gets a proper off-canvas drawer on phones instead of a stacked-on-top nav.
+   Self-contained; safe to append to any engine. ============================ */
+(function(){
+  function init(){
+    var app=document.querySelector('.app'),
+        side=document.querySelector('.sidebar'),
+        bar=document.querySelector('.topbar');
+    if(!app||!side||!bar) return;
+    if(document.getElementById('aeNavToggle')) return;
+    var scrim=document.querySelector('.navscrim');
+    if(!scrim){ scrim=document.createElement('div'); scrim.className='navscrim'; app.appendChild(scrim); }
+    var btn=document.createElement('button');
+    btn.id='aeNavToggle'; btn.className='ae-navtoggle'; btn.setAttribute('aria-label','Menu');
+    btn.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>';
+    bar.insertBefore(btn, bar.firstChild);
+    btn.addEventListener('click', function(e){ e.stopPropagation(); app.classList.toggle('nav-open'); });
+    scrim.addEventListener('click', function(){ app.classList.remove('nav-open'); });
+    side.addEventListener('click', function(e){ if(e.target.closest('a')) app.classList.remove('nav-open'); });
+  }
+  function boot(){ init(); setTimeout(init,150); setTimeout(init,500); setTimeout(init,1200); }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot); else boot();
+})();
