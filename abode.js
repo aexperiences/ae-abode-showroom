@@ -374,7 +374,7 @@
      from a stripped base — Article X, the showroom rule. */
   var DEPTS = [
     { group:"Command", items:[
-      { href:"dashboard.html",    label:"Command Center",          ic:"◎" },
+      { href:"dashboard.html",    label:"Command Center",          ic:"◎" }, { href:"calendar.html", label:"Calendar", ic:"▤" },
       { href:"approvals.html",    label:"Approval Desk",           ic:"✓", accent:"ops" }
     ]},
     { group:"Front Office", items:[

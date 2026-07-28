@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Calendar · Abode OS</title><link rel="icon" href="https://www.aexperiences.com/Abode_OS.png">
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="abode.css">
+<style>
+  .cal-toolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+  .cal-nav{display:flex;align-items:center;gap:6px}
+  .cal-arrow{width:32px;height:32px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer;font-size:15px;display:grid;place-items:center}
+  .cal-arrow:hover{border-color:var(--mag)}
+  .cal-title{font-size:18px;font-weight:800;letter-spacing:-.02em;min-width:150px}
+  .cal-views{display:inline-flex;border:1px solid var(--line);border-radius:var(--r-pill);overflow:hidden;background:var(--card)}
+  .cal-views button{border:none;background:transparent;padding:6px 13px;font-size:12.5px;font-weight:700;color:var(--mut);cursor:pointer}
+  .cal-views button.on{background:var(--mag);color:#fff}
+  .cal-search{flex:1;min-width:150px;max-width:280px}
+  .cal-cats{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+  .cal-cat{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:700;padding:4px 10px;border-radius:var(--r-pill);border:1px solid var(--line);background:var(--card);cursor:pointer;user-select:none}
+  .cal-cat .dot{width:9px;height:9px;border-radius:50%;flex:none}
+  .cal-cat.off{opacity:.4}
+  .cal-grid{border:1px solid var(--line);border-radius:var(--r-lg);overflow:hidden;background:var(--card)}
+  .cal-dow{display:grid;grid-template-columns:repeat(7,1fr);background:var(--sunk)}
+  .cal-dow div{padding:7px 10px;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--mut);font-weight:700}
+  .cal-weeks{display:grid;grid-template-columns:repeat(7,1fr)}
+  .cal-day{min-height:104px;border-right:1px solid var(--line-2);border-top:1px solid var(--line-2);padding:5px 6px;position:relative;overflow:hidden}
+  .cal-day:nth-child(7n){border-right:none}
+  .cal-day.other{background:rgba(0,0,0,.02)}
+  .cal-day.today{background:var(--mag-wash)}
+  .cal-dn{font-size:11.5px;font-weight:700;color:var(--ink-2);margin-bottom:3px}
+  .cal-day.today .cal-dn{color:var(--mag-2)}
+  .cal-ev{display:block;font-size:11px;line-height:1.3;padding:2px 6px;border-radius:5px;margin-bottom:3px;color:#fff;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .cal-ev .t{opacity:.85;font-family:var(--mono);font-size:9.5px;margin-right:3px}
+  .cal-more{font-size:10px;color:var(--mut);font-weight:700;cursor:pointer}
+  .cal-list .li{display:flex;gap:11px;align-items:flex-start;padding:10px 12px;border-bottom:1px solid var(--line-2)}
+  .cal-list .li:last-child{border-bottom:none}
+  .cal-list .li .swatch{width:10px;height:10px;border-radius:3px;margin-top:4px;flex:none}
+  .cal-list .li .d{font-family:var(--mono);font-size:11.5px;color:var(--mut);width:118px;flex:none}
+  .cal-agenda .li{display:flex;gap:11px;padding:9px 12px;border-bottom:1px solid var(--line-2)}
+  .cal-agenda .li .tm{font-family:var(--mono);font-size:11.5px;color:var(--mut);width:64px;flex:none}
+  .cal-modal-wrap{position:fixed;inset:0;background:rgba(20,16,12,.55);z-index:120;display:none;align-items:center;justify-content:center;padding:18px}
+  .cal-modal-wrap.open{display:flex}
+  .cal-modal{background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);box-shadow:var(--sh-lg);max-width:520px;width:100%;padding:22px 22px 20px;position:relative}
+  .cal-modal h2{font-size:17px}
+  .cal-x{position:absolute;top:14px;right:14px;width:30px;height:30px;border-radius:8px;border:1px solid var(--line);background:transparent;color:var(--mut);cursor:pointer;font-size:15px}
+  .cal-feed{font-family:var(--mono);font-size:11.5px;background:var(--rail);color:var(--gold-3);padding:11px 12px;border-radius:9px;word-break:break-all;margin:12px 0 10px;line-height:1.5}
+  .cal-steps{font-size:12px;color:var(--ink-2);line-height:1.7;margin-top:12px}
+  .cal-steps b{color:var(--ink)}
+  @media(max-width:860px){ .cal-day{min-height:74px} .cal-ev{font-size:10px} .cal-list .li .d{width:96px} }
+</style>
+</head><body>
+<script src="abode.js"></script>
+<script>
+(function () {
+  var ENG = window.Abode, OSNAME = "Abode OS", ICS = "abode-calendar.ics";
+  /* ---- per-OS config: categories + events (the only per-OS part) ---- */
+  var CATS = [
+    { key:"show", name:"Showings", color:"#b23b2f" },
+    { key:"close", name:"Closings", color:"#4a8a5a" },
+    { key:"list", name:"Listings", color:"#d19a2b" },
+    { key:"insp", name:"Inspections", color:"#4a6b7b" },
+    { key:"remind", name:"Reminders", color:"#6a5a8a" }
+  ];
+  var EVENTS = [
+    { date:"2026-07-27", time:"10:00", title:"Closing — 214 Oak St", cat:"close" },
+    { date:"2026-07-28", time:"14:00", title:"Showing — Maple Ave", cat:"show" },
+    { date:"2026-07-30", title:"New listing live — Birch Ln", cat:"list" },
+    { date:"2026-08-01", time:"09:00", title:"Inspection — Cedar Ct", cat:"insp" },
+    { date:"2026-08-04", time:"12:00", title:"Open house — Elm St", cat:"show" },
+    { date:"2026-08-07", time:"11:00", title:"Closing — Pine Rd", cat:"close" },
+    { date:"2026-08-12", title:"Listing photos — Spruce Way", cat:"list" },
+    { date:"2026-08-15", time:"10:00", title:"Inspection — Willow Dr", cat:"insp" }
+  ];
+  var REF = new Date("2026-07-27T12:00:00"); /* the OS "today" */
+
+  /* ================= generic calendar (reusable across OSes) ================= */
+  var esc = ENG.esc, MON=["January","February","March","April","May","June","July","August","September","October","November","December"], DOW=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+  var state = { view:"month", cur:new Date(REF.getTime()), off:{}, q:"" };
+  CATS.forEach(function(c){ state.off[c.key]=false; });
+  function catOf(k){ return CATS.filter(function(c){return c.key===k;})[0]||{name:k,color:"#888"}; }
+  function ymd(d){ return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
+  function parse(s){ var p=s.split("-"); return new Date(+p[0],+p[1]-1,+p[2],12,0,0); }
+  function fmtTime(t){ if(!t) return ""; var p=t.split(":"),h=+p[0],m=p[1]; var ap=h>=12?"pm":"am"; h=h%12; if(h===0)h=12; return h+(m!=="00"?":"+m:"")+ap; }
+  function visible(){ return EVENTS.filter(function(e){ return !state.off[e.cat] && (!state.q || e.title.toLowerCase().indexOf(state.q.toLowerCase())>=0); }); }
+  function evOn(d){ var k=ymd(d); return visible().filter(function(e){return e.date===k;}).sort(function(a,b){return (a.time||"")<(b.time||"")?-1:1;}); }
+
+  var c = ENG.mount({ active:"calendar.html", crumb:"Calendar" });
+  c.appendChild(ENG.page("Calendar","Every date the brokerage runs — showings, closings, listings and inspections — in one place. Subscribe once and it lands on your iPhone, Android, Google or Apple calendar."));
+  var host = document.createElement("div"); c.appendChild(host);
+
+  function toolbar(){
+    var label = state.view==="month" ? MON[state.cur.getMonth()]+" "+state.cur.getFullYear()
+      : state.view==="week" ? "Week of "+MON[state.cur.getMonth()].slice(0,3)+" "+weekStart(state.cur).getDate()
+      : state.view==="day" ? DOW[state.cur.getDay()]+" "+MON[state.cur.getMonth()].slice(0,3)+" "+state.cur.getDate()
+      : "All upcoming";
+    return '<div class="cal-toolbar">'+
+      '<button class="btn ghost sm" id="calToday">Today</button>'+
+      '<div class="cal-nav"><button class="cal-arrow" id="calPrev">‹</button><button class="cal-arrow" id="calNext">›</button></div>'+
+      '<div class="cal-title">'+esc(label)+'</div>'+
+      '<div class="cal-views">'+["month","week","day","list"].map(function(v){return '<button data-v="'+v+'" class="'+(state.view===v?"on":"")+'">'+v.charAt(0).toUpperCase()+v.slice(1)+'</button>';}).join("")+'</div>'+
+      '<input class="cal-search" id="calSearch" placeholder="Search events…" value="'+esc(state.q)+'">'+
+      '<button class="btn ghost sm" id="calSub">⤓ Subscribe</button>'+
+      '<button class="btn gold sm" id="calNew">+ New event</button>'+
+      '</div>'+
+      '<div class="cal-cats">'+CATS.map(function(ct){return '<span class="cal-cat '+(state.off[ct.key]?"off":"")+'" data-cat="'+ct.key+'"><span class="dot" style="background:'+ct.color+'"></span>'+esc(ct.name)+'</span>';}).join("")+'</div>';
+  }
+  function weekStart(d){ var s=new Date(d); s.setDate(d.getDate()-d.getDay()); s.setHours(12,0,0,0); return s; }
+  function evPill(e){ var ct=catOf(e.cat); return '<span class="cal-ev" style="background:'+ct.color+'" data-ev="'+esc(e.date+"|"+e.title)+'" title="'+esc((e.time?fmtTime(e.time)+" ":"")+e.title)+'">'+(e.time?'<span class="t">'+fmtTime(e.time)+'</span>':'')+esc(e.title)+'</span>'; }
+
+  function renderMonth(){
+    var first=new Date(state.cur.getFullYear(),state.cur.getMonth(),1,12), start=weekStart(first), html='<div class="cal-grid"><div class="cal-dow">'+DOW.map(function(d){return '<div>'+d+'</div>';}).join("")+'</div><div class="cal-weeks">';
+    var d=new Date(start); for(var i=0;i<42;i++){
+      var other=d.getMonth()!==state.cur.getMonth(), today=ymd(d)===ymd(REF), evs=evOn(d);
+      html+='<div class="cal-day'+(other?" other":"")+(today?" today":"")+'"><div class="cal-dn">'+d.getDate()+'</div>'+
+        evs.slice(0,3).map(evPill).join("")+(evs.length>3?'<span class="cal-more">+'+(evs.length-3)+' more</span>':'')+'</div>';
+      d.setDate(d.getDate()+1);
+      if(i%7===6 && d.getMonth()!==state.cur.getMonth() && d>first && i>=34) break;
+    }
+    return html+'</div></div>';
+  }
+  function renderWeek(){
+    var s=weekStart(state.cur), html='<div class="cal-grid"><div class="cal-dow">';
+    for(var i=0;i<7;i++){ var dd=new Date(s); dd.setDate(s.getDate()+i); html+='<div>'+DOW[i]+' '+dd.getDate()+'</div>'; }
+    html+='</div><div class="cal-weeks">';
+    for(var j=0;j<7;j++){ var d=new Date(s); d.setDate(s.getDate()+j); var today=ymd(d)===ymd(REF);
+      html+='<div class="cal-day'+(today?" today":"")+'" style="min-height:220px">'+evOn(d).map(evPill).join("")+'</div>'; }
+    return html+'</div></div>';
+  }
+  function renderDay(){
+    var evs=evOn(state.cur);
+    return '<section class="card cal-agenda"><h2>'+DOW[state.cur.getDay()]+", "+MON[state.cur.getMonth()]+" "+state.cur.getDate()+'</h2><div class="card-sub">'+(evs.length?evs.length+" scheduled":"Nothing scheduled")+'</div>'+
+      (evs.length?evs.map(function(e){var ct=catOf(e.cat);return '<div class="li"><div class="tm">'+(e.time?fmtTime(e.time):"all-day")+'</div><div><span class="tag" style="background:'+ct.color+';color:#fff">'+esc(ct.name)+'</span> '+esc(e.title)+'</div></div>';}).join(""):'<div class="empty">A clear day on the lot.</div>')+'</section>';
+  }
+  function renderList(){
+    var evs=visible().slice().sort(function(a,b){return a.date<b.date?-1:(a.date>b.date?1:(a.time||"")<(b.time||"")?-1:1);});
+    return '<section class="card cal-list"><h2>All upcoming</h2><div class="card-sub">Every event, chronological.</div>'+
+      (evs.length?evs.map(function(e){var ct=catOf(e.cat),dt=parse(e.date);return '<div class="li"><span class="swatch" style="background:'+ct.color+'"></span><div class="d">'+DOW[dt.getDay()]+" "+MON[dt.getMonth()].slice(0,3)+" "+dt.getDate()+(e.time?" · "+fmtTime(e.time):"")+'</div><div><b>'+esc(e.title)+'</b><div class="muted small">'+esc(ct.name)+'</div></div></div>';}).join(""):'<div class="empty">No events match.</div>')+'</section>';
+  }
+  function body(){ return state.view==="month"?renderMonth():state.view==="week"?renderWeek():state.view==="day"?renderDay():renderList(); }
+
+  function render(){
+    host.innerHTML = toolbar() + (state.view==="month"||state.view==="week" ? body() : "") ;
+    if(state.view==="day"||state.view==="list"){ var wrap=document.createElement("div"); wrap.innerHTML=body(); host.appendChild(wrap.firstChild); }
+    wire();
+  }
+  function step(n){ var d=state.cur; if(state.view==="month")d.setMonth(d.getMonth()+n); else if(state.view==="week")d.setDate(d.getDate()+7*n); else d.setDate(d.getDate()+n); render(); }
+  function wire(){
+    document.getElementById("calToday").onclick=function(){ state.cur=new Date(REF.getTime()); render(); };
+    document.getElementById("calPrev").onclick=function(){ step(-1); };
+    document.getElementById("calNext").onclick=function(){ step(1); };
+    Array.prototype.forEach.call(document.querySelectorAll(".cal-views button"),function(b){ b.onclick=function(){ state.view=b.dataset.v; render(); }; });
+    Array.prototype.forEach.call(document.querySelectorAll(".cal-cat"),function(b){ b.onclick=function(){ state.off[b.dataset.cat]=!state.off[b.dataset.cat]; render(); }; });
+    var s=document.getElementById("calSearch"); s.oninput=function(){ state.q=s.value; var p=s.selectionStart; render(); var ns=document.getElementById("calSearch"); ns.focus(); ns.setSelectionRange(p,p); };
+    document.getElementById("calSub").onclick=openSub;
+    document.getElementById("calNew").onclick=openNew;
+    Array.prototype.forEach.call(document.querySelectorAll(".cal-ev,.cal-more"),function(b){ b.onclick=function(){ var v=b.dataset.ev; if(v){ var t=v.split("|"); ENG.toast(t[1],"ok"); } else { state.view="day"; render(); } }; });
+  }
+
+  /* subscribe modal — mirrors the AEHub calendar's device-subscribe */
+  var feed = location.origin + "/" + ICS + "?t=demo-" + Math.random().toString(36).slice(2,10);
+  function openSub(){
+    var m=document.getElementById("calModal"); m.querySelector(".cal-modal").innerHTML=
+      '<button class="cal-x" data-close>×</button><h2>Subscribe your devices</h2>'+
+      '<p class="muted small" style="margin-top:6px;line-height:1.6">Add this '+esc(OSNAME)+' feed to your iPhone / Android or your Google / Apple Calendar. It updates automatically and gives you native reminders.</p>'+
+      '<div class="cal-feed">'+esc(feed)+'</div>'+
+      '<button class="btn gold sm" id="calCopy">Copy feed URL</button>'+
+      '<div class="cal-steps"><b>iPhone:</b> Settings → Calendar → Accounts → Add Account → Other → Add Subscribed Calendar → paste.<br>'+
+      '<b>Google:</b> Google Calendar → Other calendars → From URL → paste.<br>'+
+      '<b>Apple (Mac):</b> Calendar → File → New Calendar Subscription → paste.</div>'+
+      '<div class="srcnote" style="margin-top:12px">In the live product this feed is served by your OS. In this showroom it\'s the subscribe pattern, shown end-to-end — nothing here sends or connects.</div>';
+    m.classList.add("open");
+    m.querySelector("[data-close]").onclick=closeModal;
+    document.getElementById("calCopy").onclick=function(){ try{navigator.clipboard.writeText(feed);}catch(e){} ENG.toast("Feed URL copied.","ok"); };
+  }
+  function openNew(){
+    var m=document.getElementById("calModal");
+    m.querySelector(".cal-modal").innerHTML=
+      '<button class="cal-x" data-close>×</button><h2>New event</h2>'+
+      '<div class="field" style="margin-top:12px"><label class="f">Title</label><input id="neTitle" placeholder="e.g. Deliver the F-150"></div>'+
+      '<div class="row"><div class="field" style="flex:1"><label class="f">Date</label><input id="neDate" type="date" value="'+ymd(state.cur)+'"></div>'+
+      '<div class="field" style="flex:1"><label class="f">Time (optional)</label><input id="neTime" type="time"></div></div>'+
+      '<div class="field"><label class="f">Category</label><select id="neCat">'+CATS.map(function(ct){return '<option value="'+ct.key+'">'+esc(ct.name)+'</option>';}).join("")+'</select></div>'+
+      '<div class="row" style="margin-top:6px"><button class="btn gold" id="neSave">Add to calendar</button><span class="muted small">Session only — resets when you leave.</span></div>';
+    m.classList.add("open");
+    m.querySelector("[data-close]").onclick=closeModal;
+    document.getElementById("neSave").onclick=function(){
+      var t=document.getElementById("neTitle").value.trim(); if(!t){ ENG.toast("Give it a title first.",""); return; }
+      EVENTS.push({ date:document.getElementById("neDate").value||ymd(state.cur), time:(document.getElementById("neTime").value||""), title:t, cat:document.getElementById("neCat").value });
+      closeModal(); ENG.toast("Event added to the calendar.","ok"); render();
+    };
+  }
+  function closeModal(){ document.getElementById("calModal").classList.remove("open"); }
+
+  var modal=document.createElement("div"); modal.className="cal-modal-wrap"; modal.id="calModal"; modal.innerHTML='<div class="cal-modal"></div>';
+  document.body.appendChild(modal);
+  modal.addEventListener("click",function(e){ if(e.target===modal) closeModal(); });
+
+  render();
+})();
+</script></body></html>
