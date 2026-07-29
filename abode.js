@@ -1199,8 +1199,18 @@
     return el('<div class="ae-credit">Powered by <b>Accelerated Experiences LLC</b> · Abode OS is a white-label build. ' +
       'Demo data is a fictional brokerage; benchmark figures are sourced or shown blank.</div>');
   }
+  /* The fleet-wide Command Center polish layer. One file on the store, loaded by
+     every product, so a change lands everywhere at once instead of fourteen times. */
+  function loadFlava(){
+    if(document.getElementById("aeFlavaCss")) return;
+    var l=document.createElement("link"); l.id="aeFlavaCss"; l.rel="stylesheet";
+    l.href="https://www.aexperiences.com/ae-flava.css"; document.head.appendChild(l);
+    var j=document.createElement("script"); j.src="https://www.aexperiences.com/ae-flava.js";
+    j.defer=true; document.head.appendChild(j);
+  }
 
   function mount(opts) {
+    try{ loadFlava(); }catch(e){}
     opts = opts || {};
     db();
     var app = document.createElement("div"); app.className = "app";
