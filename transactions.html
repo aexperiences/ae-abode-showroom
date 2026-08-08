@@ -156,19 +156,30 @@
   }
 
   setTimeout(function () {
-    var sel = document.getElementById("msDeal");
-    A.db().deals.filter(function (x) { return x.status !== "Closed"; }).forEach(function (x) {
-      var o = document.createElement("option"); o.value = x.mls; o.textContent = x.mls + " — " + x.address; sel.appendChild(o);
-    });
-    sel.addEventListener("change", renderMilestones);
-    renderFiles(); renderPortal(); renderMilestones();
-
+    /* Bind the action button FIRST and independently. It used to be wired at the
+       END of this block, so any error above it (a missing select, a render throw)
+       left a live-looking button with nothing behind it. */
     var cb = document.getElementById("consultBtn");
     if (cb) cb.addEventListener("click", function () {
-      var r = A.consult("transactions", "Which files are blocked before clear-to-close?");
-      A.toast(r.passed ? "Compliance released at " + r.verdict.conf + "% — the gate is doing its job." :
-        "Compliance held at " + r.verdict.conf + "%. See the Agent Org page.", "ok");
+      try {
+        var r = A.consult("transactions", "Which files are blocked before clear-to-close?");
+        A.toast(r && r.passed
+          ? "Compliance released at " + r.verdict.conf + "% — the gate is doing its job."
+          : "Compliance held at " + (r && r.verdict ? r.verdict.conf : "--") + "%. See the Agent Org page.", "ok");
+      } catch (e) {
+        A.toast("Compliance desk is not reachable from this screen right now.", "ok");
+      }
     });
+
+    var sel = document.getElementById("msDeal");
+    if (sel) A.db().deals.filter(function (x) { return x.status !== "Closed"; }).forEach(function (x) {
+      var o = document.createElement("option"); o.value = x.mls; o.textContent = x.mls + " — " + x.address; sel.appendChild(o);
+    });
+    if (sel) sel.addEventListener("change", renderMilestones);
+    try { renderFiles(); } catch (e) {}
+    try { renderPortal(); } catch (e) {}
+    try { renderMilestones(); } catch (e) {}
+
   }, 0);
 })();
 </script>
