@@ -472,3 +472,10 @@ input[type=range]{padding:0; border:none; background:transparent; accent-color:v
   table{display:block; overflow-x:auto; -webkit-overflow-scrolling:touch; max-width:100%; font-size:12px}
   #toast-wrap{left:12px !important; right:12px !important}
 }
+
+
+/* Seven-figure money was clipping at the card edge: grid children default to
+   min-width:auto and refuse to shrink, so the value overflowed. Fixed. */
+.stat{ min-width:0 }
+.stat .s-v{ font-size:clamp(15px, 4.4vw, 22px); min-width:0; white-space:nowrap; letter-spacing:-.035em }
+.stat.headline .s-v{ font-size:clamp(17px, 5.1vw, 26px) }
