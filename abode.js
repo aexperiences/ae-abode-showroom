@@ -351,16 +351,16 @@
 
   /* The three packages. `includes` is what ships in the box at that price. */
   var TIERS = {
-    lite: { key:"lite", name:"Lite", rank:1, mo:650, build:4000,
+    lite: { key:"lite", name:"Solo / Team", rank:1, mo:450, build:2500,
       desc:"Deal-to-close core. Lead gen, the CRM, listings, the transaction & compliance gate, and the commission money spine.",
       base:"Single office · up to 8 agents",
       includes:["leadgen","crm","listings","transactions","commissions"] },
-    standard: { key:"standard", name:"Standard", rank:2, mo:1400, build:10000,
+    standard: { key:"standard", name:"Team", rank:2, mo:950, build:6000,
       desc:"The running brokerage. Adds the books, the analytics board, recruiting & onboarding, HR license tracking, IT — and the agent org.",
       base:"Single office · up to 30 agents",
       includes:["leadgen","crm","listings","transactions","commissions",
                 "books","analytics","recruiting","hr","it","org"] },
-    grandsuite: { key:"grandsuite", name:"Grandsuite", rank:3, mo:2900, build:24000,
+    grandsuite: { key:"grandsuite", name:"Brokerage", rank:3, mo:2400, build:9900,
       desc:"The whole brokerage, nothing held back. Every department, the full ten-chain agent org, and the contracts & compliance advisory desk.",
       base:"Multi-office · unlimited agents · dedicated environment · data migration",
       includes:["leadgen","crm","listings","transactions","commissions",
