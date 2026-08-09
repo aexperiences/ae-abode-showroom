@@ -1124,7 +1124,7 @@
   }
   function priceLabel() {
     var p = priceNow();
-    return money(p.mo) + "/mo · " + money(p.build) + " build";
+    return money(p.mo) + "/mo licensed · +" + money(p.build) + " to white-label";
   }
 
   function el(html) { var t = document.createElement("template"); t.innerHTML = String(html).trim(); return t.content.firstChild; }
@@ -1213,7 +1213,7 @@
       '<div class="spacer"></div>' +
       '<div class="tierpill" id="tierPillStatic">' +
         '<span class="dot"></span><div><b>' + esc(p.tier.name) + (p.changed ? ' <i class="cfg">configured</i>' : '') + '</b> ' +
-        '<span class="price">' + money(p.mo) + '/mo · ' + money(p.build) + ' build</span></div>' +
+        '<span class="price">' + money(p.mo) + '/mo licensed · +' + money(p.build) + ' to white-label</span></div>' +
         '<span class="chev">▾</span></div>' +
       whoChip();
 
@@ -1225,7 +1225,7 @@
       var tt = TIERS[k];
       var opt = el('<div class="tieropt ' + (k === tier() ? "on" : "") + '">' +
         '<div class="to-top"><span class="to-name">' + esc(tt.name) + '</span>' +
-        '<span class="to-price">' + money(tt.mo) + '/mo · ' + money(tt.build) + ' build</span></div>' +
+        '<span class="to-price">' + money(tt.mo) + '/mo licensed · +' + money(tt.build) + ' to white-label</span></div>' +
         '<div class="to-desc">' + esc(tt.desc) + '</div>' +
         '<div class="to-base">' + esc(tt.base) + ' · ' + tt.includes.length + ' departments</div></div>');
       opt.addEventListener("click", function (e) { e.stopPropagation(); setTier(k); location.reload(); });
@@ -1243,7 +1243,7 @@
         '<span class="rr-name">' + esc(r.label) +
           (isOn && !inPack ? ' <i class="rr-flag add">added</i>' : '') +
           (!isOn && inPack ? ' <i class="rr-flag off">removed</i>' : '') + '</span>' +
-        '<span class="rr-price">' + money(r.mo) + '/mo<i>' + money(r.build) + ' build</i></span>' +
+        '<span class="rr-price">' + money(r.mo) + '/mo<i>+' + money(r.build) + ' white-label</i></span>' +
         '<span class="rr-why">' + esc(r.why) + '</span></div>');
       row.addEventListener("click", function (e) {
         e.stopPropagation();
@@ -1259,7 +1259,7 @@
       '<div class="tt-line"><span>' + esc(p.tier.name) + ' package</span><b>' + money(p.tier.mo) + '/mo</b></div>' +
       (p.adds.length ? '<div class="tt-line add"><span>+ ' + p.adds.length + ' department' + (p.adds.length>1?"s":"") + ' added</span><b>+' + money(p.addMo) + '/mo</b></div>' : '') +
       (p.offs.length ? '<div class="tt-line off"><span>− ' + p.offs.length + ' department' + (p.offs.length>1?"s":"") + ' removed</span><b>−' + money(p.offMo) + '/mo</b></div>' : '') +
-      '<div class="tt-line grand"><span>Configured</span><b>' + money(p.mo) + '/mo · ' + money(p.build) + ' build</b></div>' +
+      '<div class="tt-line grand"><span>Configured</span><b>' + money(p.mo) + '/mo licensed · +' + money(p.build) + ' to white-label</b></div>' +
       '<div class="tt-save">' + p.rooms.length + ' department' + (p.rooms.length === 1 ? "" : "s") +
         ' at ' + money(p.alaMo) + '/mo à la carte' +
         (p.savingMo > 0 ? ' — the package saves ' + money(p.savingMo) + '/mo' : '') + '.</div>' +
@@ -1513,7 +1513,7 @@
         return 'This OS runs on a '+nd+'-department AI agent organization, and I’m '+coo.name+', the COO. You ask; I route it to exactly one department, let its five-seat chain — a head, an admin exec, a pacemaker, and two opposing lenses that never confer — work it under its own confidence bar, then bring you one clean answer with its reasons. Money and compliance calls hold a higher 85% bar and come to you if they aren’t certain. Nothing here acts on its own — that’s Ghost Mode; anything that would send, spend or sign is staged on the Approval Desk. The real engine runs server-side on DeepSeek; this showroom is a faithful local stand-in.';
       if(m('price','pricing','cost','how much','what do you charge','tier','plan','package','per month','/mo','subscription','quote','expensive')){
         var ts=Object.keys(ENG.TIERS).map(function(k){return ENG.TIERS[k];}).sort(function(a,b){return (a.mo||0)-(b.mo||0);});
-        var lines=ts.map(function(t){return '• '+t.name+' — '+money(t.mo)+'/mo + '+money(t.build)+' one-time build'+(t.desc?': '+t.desc:'');}).join('\n');
+        var lines=ts.map(function(t){return '• '+t.name+' — '+money(t.mo)+'/mo licensed, or +'+money(t.build)+' one-time to white-label it'+(t.desc?': '+t.desc:'');}).join('\n');
         return 'Here are the packages:\n\n'+lines+'\n\nEvery department is also priced on its own, so you can add or drop any one and the price moves with it — tap the tier chip at the top to configure it live. Draft pricing; Accelerated Experiences LLC sets the final number.';
       }
       if(m('custom','white label','white-label','brand','skin','tailor','our own','add a department','add department','remove a','turn off','turn on','configure','make it fit','our data')){
