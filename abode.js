@@ -1064,6 +1064,30 @@
     return "The whole brokerage on one sheet — for the Broker-Owner's firm-wide scope. Every number below is computed from this hub's own deals and roster: split-and-cap math, not typed in, not reconstructed at month end.";
   }
 
+  /* The money card's own heading and note follow the seat too. A solo agent's
+     board is not "the number the firm actually keeps". The firm wording is
+     passed in rather than retyped here, so the Brokerage view is untouched. */
+  function moneyHead(firm) {
+    var w = who();
+    if (w.scope === "agent") return "Your money — what you keep after the split";
+    if (w.scope === "team")  return "Your team's money — production and the override you collect";
+    return firm;
+  }
+  function moneyBlurb(firm) {
+    var w = who();
+    if (w.scope === "agent")
+      return "Take-home and cap progress are the two numbers an agent actually runs on, and most agents cannot get either one on demand. Computed here off every closed deal's split, franchise fee and cap.";
+    if (w.scope === "team")
+      return "Your group's production and the override you collect on it, computed off each member's own split plan — not a spreadsheet rebuilt at month end.";
+    return firm;
+  }
+  function moneySrc(firm) {
+    var w = who();
+    if (w.scope !== "firm")
+      return "Source: your take-home = your GCI minus the house split, franchise fees and cap credits, computed per closed deal from this hub's own data. Splits and caps are firm-specific, so no national benchmark is asserted.";
+    return firm;
+  }
+
   function whoChip() {
     var w = who();
     return '<div class="who"><div class="av">' + esc(w.initials) + '</div><div>' + esc(w.name) + '<br>' +
@@ -1374,7 +1398,7 @@
     LISTING_STATUS:LISTING_STATUS, ROUTING:ROUTING, BENCH:BENCH, CONTEXT:CONTEXT, REPLACES:REPLACES,
     /* tiers, the price book, the configurator + org */
     TIERS:TIERS, ROOMS:ROOMS, DEPTS:DEPTS, SEATS:SEATS, BRAIN:BRAIN,
-    tier:tier, tierRank:tierRank, setTier:setTier, tierByRank:tierByRank, who:who, deckLine:deckLine,
+    tier:tier, tierRank:tierRank, setTier:setTier, tierByRank:tierByRank, who:who, deckLine:deckLine, moneyHead:moneyHead, moneyBlurb:moneyBlurb, moneySrc:moneySrc,
     activeRooms:activeRooms, hasRoom:hasRoom, toggleRoom:toggleRoom,
     priceNow:priceNow, priceLabel:priceLabel,
     consult:consult, askHarper:askHarper, routeDept:routeDept,
