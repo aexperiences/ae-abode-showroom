@@ -1064,30 +1064,6 @@
     return "The whole brokerage on one sheet — for the Broker-Owner's firm-wide scope. Every number below is computed from this hub's own deals and roster: split-and-cap math, not typed in, not reconstructed at month end.";
   }
 
-  /* The money card's own heading and note follow the seat too. A solo agent's
-     board is not "the number the firm actually keeps". The firm wording is
-     passed in rather than retyped here, so the Brokerage view is untouched. */
-  function moneyHead(firm) {
-    var w = who();
-    if (w.scope === "agent") return "Your money — what you keep after the split";
-    if (w.scope === "team")  return "Your team's money — production and the override you collect";
-    return firm;
-  }
-  function moneyBlurb(firm) {
-    var w = who();
-    if (w.scope === "agent")
-      return "Take-home and cap progress are the two numbers an agent actually runs on, and most agents cannot get either one on demand. Computed here off every closed deal's split, franchise fee and cap.";
-    if (w.scope === "team")
-      return "Your group's production and the override you collect on it, computed off each member's own split plan — not a spreadsheet rebuilt at month end.";
-    return firm;
-  }
-  function moneySrc(firm) {
-    var w = who();
-    if (w.scope !== "firm")
-      return "Source: your take-home = your GCI minus the house split, franchise fees and cap credits, computed per closed deal from this hub's own data. Splits and caps are firm-specific, so no national benchmark is asserted.";
-    return firm;
-  }
-
   function whoChip() {
     var w = who();
     return '<div class="who"><div class="av">' + esc(w.initials) + '</div><div>' + esc(w.name) + '<br>' +
@@ -1371,8 +1347,25 @@
       (sub ? '<p class="sub">' + sub + '</p>' : "") + '</div>' +
       '<div class="pagehead-actions">' + (actionsHTML || "") + '</div></div>');
   }
+  /* The Command Center's money card is written for the Broker-Owner. Rather than
+     fork the whole page, swap the firm-only wording when someone is sitting in an
+     agent seat — the figures inside the card are already scoped by kpis(). */
+  function reseat(html) {
+    var w = who();
+    if (w.scope === "firm" || !html || html.indexOf("Company Dollar") < 0) return html;
+    var head = w.scope === "team"
+      ? "Your team's money — production and the override you collect"
+      : "Your money — what you keep after the split";
+    var blurb = w.scope === "team"
+      ? "Your group's production and the override you collect on it, computed off each member's own split plan — not a spreadsheet rebuilt at month end."
+      : "Take-home and cap progress are the two numbers an agent actually runs on, and most agents cannot get either one on demand. Computed here off every closed deal's split, franchise fee and cap.";
+    return String(html)
+      .replace(/Company Dollar[^<]*/, head)
+      .replace(/Company dollar and cap progress[^<]*/, blurb);
+  }
+
   function card(inner, cls) {
-    return el('<section class="card ' + (cls || "") + '">' + inner + '</section>');
+    return el('<section class="card ' + (cls || "") + '">' + reseat(inner) + '</section>');
   }
   function stat(label, value, note, band) {
     return '<div class="stat ' + (band || "") + '"><div class="s-l">' + esc(label) + '</div>' +
@@ -1380,7 +1373,12 @@
       (note ? '<div class="s-n">' + note + '</div>' : "") + '</div>';
   }
   function tag(text, kind) { return '<span class="tag ' + (kind || "") + '">' + esc(text) + '</span>'; }
-  function srcNote(text) { return '<div class="srcnote">Source: ' + esc(text) + '</div>'; }
+  function srcNote(text) {
+    var w = who();
+    if (w.scope !== "firm" && /Company dollar\s*=/.test(String(text)))
+      text = "your take-home = your GCI minus the house split, franchise fees and cap credits, computed per closed deal from this hub's own data. Splits and caps are firm-specific, so no national benchmark is asserted.";
+    return '<div class="srcnote">Source: ' + esc(text) + '</div>';
+  }
   function bar(p, cls) {
     var w = Math.max(0, Math.min(100, p));
     return '<div class="bar" style="margin-top:6px"><i style="width:' + w.toFixed(0) + '%' +
@@ -1398,7 +1396,7 @@
     LISTING_STATUS:LISTING_STATUS, ROUTING:ROUTING, BENCH:BENCH, CONTEXT:CONTEXT, REPLACES:REPLACES,
     /* tiers, the price book, the configurator + org */
     TIERS:TIERS, ROOMS:ROOMS, DEPTS:DEPTS, SEATS:SEATS, BRAIN:BRAIN,
-    tier:tier, tierRank:tierRank, setTier:setTier, tierByRank:tierByRank, who:who, deckLine:deckLine, moneyHead:moneyHead, moneyBlurb:moneyBlurb, moneySrc:moneySrc,
+    tier:tier, tierRank:tierRank, setTier:setTier, tierByRank:tierByRank, who:who, deckLine:deckLine,
     activeRooms:activeRooms, hasRoom:hasRoom, toggleRoom:toggleRoom,
     priceNow:priceNow, priceLabel:priceLabel,
     consult:consult, askHarper:askHarper, routeDept:routeDept,
