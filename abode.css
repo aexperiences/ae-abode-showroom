@@ -486,8 +486,12 @@ input[type=range]{padding:0; border:none; background:transparent; accent-color:v
 .stat.headline .s-v{ font-size:clamp(17px, 5.1vw, 26px) }
 
 
-/* Two cards overhung the viewport by ~3px at phone widths — border-box so the
-   card padding stops adding to the width. */
+/* Two cards overhung the viewport on a phone. The card was never the problem:
+   the grid TRACK was 402px inside a 386px container, because a grid item
+   defaults to min-width:auto and refuses to shrink below its content — here a
+   wide table. Letting the items shrink puts the track back inside the box. */
 @media(max-width:760px){
+  .grid, .grid.g2, .grid.g3{ grid-template-columns:1fr }
+  .grid > *{ min-width:0 }
   .card{ box-sizing:border-box; max-width:100% }
 }
