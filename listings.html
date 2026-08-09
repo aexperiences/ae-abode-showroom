@@ -21,7 +21,7 @@
 
   c.appendChild(A.page(
     "Listings · Inventory",
-    "MLS-fed listings normalized via RESO so they render uniformly across every agent site — status, days-on-market, " +
+    "Listings rendering uniformly across every agent site. These rows are seeded for the showroom — reading them from your board over the RESO Web API is on the roadmap, not shipped — status, days-on-market, " +
     "and list price vs original. The reduction signal shows before a listing goes cold, not after.",
     '<button class="btn green sm" id="consultBtn">Consult Listings</button>'
   ));
@@ -66,7 +66,7 @@
     '<tbody>' + rows + '</tbody></table>' +
     '<div class="divider"></div>' +
     '<div class="fence"><b>1802 Lakeview is 61 days out in the luxury band</b> and has already taken one reduction — the ' +
-    'call is a second cut. Pushing a new price to the MLS is a Fence and stages to the desk.</div>' +
+    'call is a second cut. Pushing a new price out is a Fence and stages to the desk — and since the board feed is not connected yet, a price change here goes no further than this floor.</div>' +
     A.srcNote("No national days-on-market target is asserted — the honest benchmark is your own local MLS median by " +
               "price band. " + A.BENCH.dom.src)
   ));
