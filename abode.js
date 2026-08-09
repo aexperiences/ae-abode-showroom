@@ -1361,7 +1361,10 @@
       : "Take-home and cap progress are the two numbers an agent actually runs on, and most agents cannot get either one on demand. Computed here off every closed deal's split, franchise fee and cap.";
     return String(html)
       .replace(/Company Dollar[^<]*/, head)
-      .replace(/Company dollar and cap progress[^<]*/, blurb);
+      .replace(/Company dollar and cap progress[^<]*/, blurb)
+      .replace(/Brokerage share kept[^<]*/, w.scope === "team"
+        ? "Your team's share after splits, caps and franchise — YTD closed"
+        : "What you keep after your split, franchise fee and cap — YTD closed");
   }
 
   function card(inner, cls) {
