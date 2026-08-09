@@ -274,8 +274,8 @@
     ],
 
     systems: [
-      { id:"sy1", name:"IDX agent sites", state:"CLEAR", metric:"6 sites · 99.97% uptime" },
-      { id:"sy2", name:"MLS / RESO feed sync", state:"WATCH", metric:"last sync 41 min ago — provider throttling" },
+      { id:"sy1", name:"IDX agent sites", state:"PLANNED", metric:"not live in the showroom — IDX is on the roadmap, not shipped" },
+      { id:"sy2", name:"MLS / RESO feed", state:"PLANNED", metric:"not connected — board integration is on the roadmap, not shipped" },
       { id:"sy3", name:"Dialer & SMS (Twilio-simulated)", state:"CLEAR", metric:"queue empty · A2P registered" },
       { id:"sy4", name:"E-sign & forms engine", state:"CLEAR", metric:"no stuck envelopes" },
       { id:"sy5", name:"Client & agent portal", state:"CLEAR", metric:"99.98% · 210ms" }
@@ -328,7 +328,7 @@
     crm:          { label:"CRM · Pipelines",         mo:85,  build:600,
                    why:"Behavior-scored smart lists, the omnichannel dialer/SMS/email, and auto property-matching to saved searches." },
     listings:     { label:"Listings · Inventory",    mo:70,  build:500,
-                   why:"MLS-fed listings, status, days-on-market and price-vs-list — uniform across every agent site." },
+                   why:"Listings, status, days-on-market and price-vs-list in one place, uniform across every agent site. Listings in this showroom are seeded — pulling them from your board is roadmap, not shipped." },
     transactions: { label:"Transactions · Compliance", mo:90, build:700,
                    why:"The broker compliance review portal, milestone checklists off the contract date, and e-sign. The rights-gate to clear-to-close." },
     commissions:  { label:"Commissions · Accounting", mo:95, build:800,
@@ -342,7 +342,7 @@
     hr:           { label:"HR · People Ops",         mo:65,  build:450,
                    why:"Roster, onboarding, and license/CE expiry tracking. A lapsed license is a stop-work event." },
     it:           { label:"IT · System Health",      mo:55,  build:350,
-                   why:"CLEAR / WATCH / INTERVENE on the IDX sites, the MLS feed, the dialer, e-sign and the portal." },
+                   why:"CLEAR / WATCH / INTERVENE on the dialer, e-sign and the portal. The IDX sites and the MLS feed show as PLANNED — they are not connected yet." },
     law:          { label:"Law · Contracts & Compliance", mo:100, build:800,
                    why:"RESPA, agency-disclosure and fair-housing read — advisory only, with a hard fence to a real attorney." },
     org:          { label:"Agent Org · Bus",         mo:150, build:1300,
@@ -872,15 +872,18 @@
       match:["it","system","health","uptime","backup","outage","security","feed","mls","reso","sync","dialer","portal","incident","slow","site"],
       build: function (d) {
         var sys = d.systems || [];
-        var watch = sys.filter(function(s){ return s.state !== "CLEAR"; });
+        var planned = sys.filter(function(s){ return s.state === "PLANNED"; });
+        var watch   = sys.filter(function(s){ return s.state !== "CLEAR" && s.state !== "PLANNED"; });
         return {
-          stance: watch.length
-            ? "WATCH: the MLS/RESO feed last synced 41 minutes ago — provider throttling, not an outage. Listings could drift stale on the agent sites if it stretches; nothing needs a human INTERVENE yet."
-            : "System is CLEAR — IDX sites, dialer, e-sign and the portal all reachable, feed in sync.",
-          conf: watch.length ? 84 : 89,
+          stance: planned.length
+            ? "Everything that is actually shipped is reachable — the dialer, e-sign and the portal. The MLS/RESO feed and the IDX sites are NOT connected: board integration is on the roadmap, not something running today. Do not make a pricing or listing call off a feed that is not live."
+            : (watch.length
+              ? "One or more shipped services are on WATCH — see the systems board for which."
+              : "System is CLEAR — the dialer, e-sign and the portal are all reachable."),
+          conf: planned.length ? 92 : (watch.length ? 84 : 89),
           reasons: [
-            { t:"data", s: sys.length + " service(s) monitored; " + watch.length + " on WATCH, 0 on INTERVENE." },
-            { t:"data", s: "The MLS feed is the one that shows: a stale sync means listings and status drift across every agent site at once." },
+            { t:"data", s: sys.length + " service(s) listed; " + planned.length + " not built yet (PLANNED), " + watch.length + " on WATCH, 0 on INTERVENE." },
+            { t:"data", s: "The MLS feed is the one to watch once it exists: a stale sync would drift listings and status across every agent site at once. It is not connected today, so nothing is drifting — but nothing is arriving either." },
             { t:"assumption", s: "Assumes the showroom's checks mirror production. A true INTERVENE — an outage or a PII breach — pages a person immediately." }
           ]
         };
