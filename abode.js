@@ -662,8 +662,54 @@
 
   /* One call for the Command Center headline board. Bands are internal/honest;
      external target bands ship BLANK (see BENCH) — we don't invent targets. */
+  /* An agent's or team lead's board, run through the same commission engine the
+     brokerage uses — just pointed at one person. Their GCI, what they actually
+     took home after split, franchise and cap, their cap progress, their pipeline.
+     Every value here is computed; none of it is written for the demo. */
+  function seatKpis(w, d) {
+    var run   = commissionRun(d);
+    var S     = run[w.agent] || {};
+    var a     = (d.agents || []).filter(function (x) { return x.name === w.agent; })[0] || {};
+    var mine  = (d.deals  || []).filter(function (x) { return x.agent === w.agent; });
+    var pend  = mine.filter(function (x) { return x.status === "Pending" || x.status === "Clear to Close"; })
+                    .reduce(function (n, x) { return n + (Number(x.price) || 0); }, 0);
+    var units = Number(S.deals) || 0;
+    var vol   = Number(S.volume) || 0;
+    var cap   = Number(a.cap) || 0;
+    var paid  = Number(S.capPaid) || 0;
+
+    var out = [
+      { k:"myNet", label:"Your take-home", value:Number(S.agentNet)||0, fmt:"money", band:"good",
+        help:"What you keep after the house split, the franchise fee and your cap — YTD closed. Not gross commission." },
+      { k:"myGci", label:"Your GCI", value:Number(S.gci)||0, fmt:"money", band:"good",
+        help:"Gross commission on your closed sides, before any split comes out." },
+      { k:"myVol", label:"Your closed volume", value:vol, fmt:"money", band:"good",
+        help:"Sale price across the deals you closed." },
+      { k:"myUnits", label:"Your units closed", value:units, fmt:"int", band:"good",
+        help:"Closed transaction sides in your name." },
+      { k:"myPending", label:"Your pending volume", value:pend, fmt:"money", band:"watch",
+        help:"Your deals under contract and not yet closed." },
+      { k:"myAvg", label:"Your avg sale price", value: units ? Math.round(vol / units) : 0, fmt:"money", band:"good",
+        help:"Your closed volume divided by your units." }
+    ];
+
+    if (cap) out.push({ k:"myCap",
+      label: S.capped ? "Cap — met" : "Cap remaining",
+      value: S.capped ? 0 : Math.max(0, cap - paid), fmt:"money", band: S.capped ? "good" : "watch",
+      help: S.capped
+        ? "You have paid your $" + cap.toLocaleString() + " cap for the year — from here the house takes the flat transaction fee only."
+        : "$" + paid.toLocaleString() + " of your $" + cap.toLocaleString() + " cap is paid. Once it is met you flip to roughly 100% and the house takes a flat fee." });
+
+    if (w.scope === "team" && Number(S.teamIn))
+      out.push({ k:"myTeam", label:"Team override collected", value:Number(S.teamIn)||0, fmt:"money", band:"good",
+        help:"Your share of your team members' closings, per their split plans." });
+
+    return out;
+  }
+
   function kpis() {
-    var d = db();
+    var d = db(), w = who();
+    if (w.scope !== "firm") return seatKpis(w, d);
     var t = commissionTotals(d);
     var ar = deskFeeAR(d);
     return [
@@ -983,6 +1029,46 @@
   function tier() { return db().tier || "grandsuite"; }
   function tierRank() { return TIERS[tier()].rank; }
   function tierByRank(r){ for (var k in TIERS) if (TIERS[k].rank === r) return k; return "grandsuite"; }
+
+  /* ------------------------------------------------------------------ the seat
+     A tier isn't just a shorter menu of departments — it's a different job. The
+     Broker-Owner's headline numbers (company dollar, desk-fee AR, the roster)
+     do not exist for a solo agent paying for the entry tier, and putting them in
+     front of that buyer is how you lose them: they can't find themselves on the
+     screen. So the seat follows the tier.
+
+     The two agent seats are real rows out of this hub's own roster, which means
+     every figure on an agent's board is that agent's actual split, cap and
+     closings — the same commission engine the brokerage runs, pointed at one
+     person. Nothing is mocked up for the smaller tiers. */
+  var SEATS_BY_RANK = {
+    1: { name:"Danny Cho",   sub:"Agent · 70/30 to cap",             scope:"agent" },
+    2: { name:"Marcus Bell", sub:"Team Lead · Bell Group",           scope:"team"  },
+    3: { name:"Ruth Calder", sub:"Broker-Owner · Designated Broker", scope:"firm"  }
+  };
+  function who() {
+    var s = SEATS_BY_RANK[tierRank()] || SEATS_BY_RANK[3];
+    return { name:s.name, sub:s.sub, scope:s.scope,
+             agent: s.scope === "firm" ? null : s.name,
+             initials: s.name.split(/\s+/).map(function (x) { return x.charAt(0); }).join("").slice(0,2).toUpperCase() };
+  }
+
+  /* The line under the page title has to agree with the seat, or the copy keeps
+     promising a firm-wide view the numbers no longer deliver. */
+  function deckLine() {
+    var w = who();
+    if (w.scope === "agent")
+      return "Your book on one sheet — your closings, your split, your cap. Every number is computed from this hub's own deals, not typed in. Firm-wide figures like company dollar and the roster belong to the Brokerage seat and aren't shown here.";
+    if (w.scope === "team")
+      return "Your team on one sheet — the group's production plus the override you collect on it. Computed from this hub's own deals and split plans, not typed in.";
+    return "The whole brokerage on one sheet — for the Broker-Owner's firm-wide scope. Every number below is computed from this hub's own deals and roster: split-and-cap math, not typed in, not reconstructed at month end.";
+  }
+
+  function whoChip() {
+    var w = who();
+    return '<div class="who"><div class="av">' + esc(w.initials) + '</div><div>' + esc(w.name) + '<br>' +
+      '<span class="muted small">' + esc(w.sub) + '</span></div></div>';
+  }
   function setTier(k) { save(function (d) { d.tier = k; d.adds = []; d.offs = []; }); }
 
   function activeRooms() {
@@ -1126,8 +1212,7 @@
         '<span class="dot"></span><div><b>' + esc(p.tier.name) + (p.changed ? ' <i class="cfg">configured</i>' : '') + '</b> ' +
         '<span class="price">' + money(p.mo) + '/mo · ' + money(p.build) + ' build</span></div>' +
         '<span class="chev">▾</span></div>' +
-      '<div class="who"><div class="av">RC</div><div>Ruth Calder<br>' +
-        '<span class="muted small">Broker-Owner · Designated Broker</span></div></div>';
+      whoChip();
 
     var menu = document.createElement("div"); menu.className = "tiermenu"; menu.id = "tierMenu";
     menu.appendChild(el('<div class="tm-head">Start from a package, then <b>add or take off any department</b>. ' +
@@ -1289,7 +1374,7 @@
     LISTING_STATUS:LISTING_STATUS, ROUTING:ROUTING, BENCH:BENCH, CONTEXT:CONTEXT, REPLACES:REPLACES,
     /* tiers, the price book, the configurator + org */
     TIERS:TIERS, ROOMS:ROOMS, DEPTS:DEPTS, SEATS:SEATS, BRAIN:BRAIN,
-    tier:tier, tierRank:tierRank, setTier:setTier, tierByRank:tierByRank,
+    tier:tier, tierRank:tierRank, setTier:setTier, tierByRank:tierByRank, who:who, deckLine:deckLine,
     activeRooms:activeRooms, hasRoom:hasRoom, toggleRoom:toggleRoom,
     priceNow:priceNow, priceLabel:priceLabel,
     consult:consult, askHarper:askHarper, routeDept:routeDept,
