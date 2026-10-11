@@ -78,13 +78,13 @@
   var T=window.Abode;
   var c=T.mount({active:"connect.html",crumb:"Connect"});
   var API=window.ABODE_API+'/api/connect'; var NS='abode';
-  var TEAM=[
-    {slug:"dana-reyes",name:"Dana Reyes",role:"Managing Broker",init:"DR"},
-    {slug:"marcus-hale",name:"Marcus Hale",role:"Team Lead",init:"MH"},
-    {slug:"priya-shah",name:"Priya Shah",role:"Agent",init:"PS"},
-    {slug:"theo-brant",name:"Theo Brant",role:"Agent",init:"TB"},
-    {slug:"nina-okafor",name:"Nina Okafor",role:"Transaction Coordinator",init:"NO"}
-  ];
+  /* The team — read from this system's own seeded people, never typed in here. */
+  var TEAM=(function(){ var D={}; try{ D=T.db()||{}; }catch(e){} var out=[], seen={};
+    function add(n,r){ n=String(n||"").trim(); if(!n||seen[n]) return; seen[n]=1;
+      var w=n.replace(/^Coach\s+/,"").replace(/,.*$/,"").split(/\s+/);
+      out.push({slug:n.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,""),name:n,role:String(r||""),init:(((w[0]||"")[0]||"")+(w.length>1?w[w.length-1][0]:((w[0]||"")[1]||""))).toUpperCase()}); }
+    try{ (D.agents||[]).forEach(function(a){ if(a.type!=="AI") add(a.name,a.role); }); }catch(e){}
+    return out; })();
   var CHANNELS=[
     {ch:"office",name:"# office",desc:"The whole brokerage"},
     {ch:"listings",name:"# listings",desc:"New inventory + price changes"},

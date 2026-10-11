@@ -44,7 +44,7 @@
 (function () {
   var T=window.Abode;
   var c=T.mount({active:"records.html",crumb:"Records"});
-  var KEY="abode_records_v1";
+  var KEY="abode_records_v2";
 
   /* The filing plan — one cabinet per real thing the firm keeps. */
   var CABINETS=[
@@ -58,14 +58,17 @@
     {k:"firm",ic:"🏢",name:"The brokerage",desc:"Formation, insurance, policy manual."}
   ];
 
-  /* Seeded records — real McArthur artifacts where they exist, honestly labeled. */
-  var SEED=[
-    {cab:"transactions",name:"412 Ponderosa — purchase & sale",kind:"pdf",tag:"sot",who:"Nina Okafor",when:"2026-07-24",note:"Fully executed. Governs the deal."},
-    {cab:"listings",name:"1180 Lakeview — listing file",kind:"pdf",tag:"sot",who:"Marcus Hale",when:"2026-07-12",note:""},
-    {cab:"money",name:"Commission statements — 2026",kind:"xls",tag:"sot",who:"Dana Reyes",when:"2026-07-27",note:"Feeds the books."},
-    {cab:"people",name:"Broker licenses & E&O",kind:"pdf",tag:"sot",who:"Dana Reyes",when:"2026-01-08",note:""},
-    {cab:"compliance",name:"Broker file review — Q2",kind:"doc",tag:"fin",who:"Dana Reyes",when:"2026-07-01",note:""}
-  ];
+  /* Seeded records — built from this system's own book (its people, jobs and paperwork), never typed in. */
+  var SEED=(function(){ var D={}; try{ D=T.db()||{}; }catch(e){} var out=[], today=((T.TODAY instanceof Date)?T.TODAY:new Date()).toISOString().slice(0,10);
+    function add(cab,name,kind,tag,who,when,note){ if(name) out.push({cab:cab,name:String(name),kind:kind||"pdf",tag:tag||"",who:who||"",when:when||"",note:note||""}); }
+    function exp(d){ return !d||!/^\d{4}-/.test(d)?"":(d<today?"EXPIRED":"Expires "+d); }
+    try{ var MB=((D.agents||[]).filter(function(a){return /managing broker/i.test(a.role);})[0]||{}).name||"";
+      (D.listings||[]).forEach(function(l){ add("clients","Listing agreement — "+l.address,"pdf","sot",l.agent,"",l.status); add("listings","Listing file — "+l.address+" · MLS "+l.mls,"pdf","sot",l.agent,"",l.note); });
+      (D.deals||[]).forEach(function(d){ add("transactions","Purchase & sale — "+d.address,"pdf",d.status==="Closed"?"fin":"sot",d.agent,d.contractDate,d.status); if(d.status==="Closed") add("money","Commission statement — "+d.address,"xls","sot",MB,d.closeDate,""); });
+      (D.agents||[]).forEach(function(a){ if(a.license) add("people","License & E&O — "+a.name+" · "+a.license,"pdf","sot",MB,"",a.ce||""); });
+      (D.compliance||[]).forEach(function(c){ add("compliance",c.doc+" review — "+c.deal,"pdf",c.status==="Approved"?"sot":"wip",c.reviewer,"",c.status); });
+      (D.campaigns||[]).forEach(function(c){ add("marketing","Campaign — "+c.name+" ("+c.channel+")","doc","wip",MB,"",c.status); }); }catch(e){}
+    return out; })();
 
   function load(){ try{ var d=JSON.parse(sessionStorage.getItem(KEY)); if(d&&d.length) return d; }catch(e){} return SEED.slice(); }
   function persist(){ try{ sessionStorage.setItem(KEY,JSON.stringify(FILES)); }catch(e){} }
