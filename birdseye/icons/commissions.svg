@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="100%" height="100%">
+<defs>
+<linearGradient id="tile" x1="0" y1="0" x2="0.35" y2="1">
+<stop offset="0%" stop-color="#ece5d6"/><stop offset="46%" stop-color="#bfb39c"/><stop offset="100%" stop-color="#5f5445"/></linearGradient>
+<linearGradient id="glare" x1="0" y1="0" x2="0" y2="1">
+<stop offset="0%" stop-color="#fff" stop-opacity=".20"/><stop offset="44%" stop-color="#fff" stop-opacity="0"/></linearGradient>
+<linearGradient id="pap" x1="0" y1="0" x2="0.3" y2="1">
+<stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#ece8dc"/></linearGradient>
+<linearGradient id="trace" x1="0" y1="0" x2="0.3" y2="1">
+<stop offset="0%" stop-color="#fbf7ec"/><stop offset="100%" stop-color="#e7dfc9"/></linearGradient>
+<linearGradient id="brassy" x1="0" y1="0" x2="0" y2="1">
+<stop offset="0%" stop-color="#e2b86c"/><stop offset="100%" stop-color="#9a6f2c"/></linearGradient>
+<linearGradient id="steel" x1="0" y1="0" x2="0" y2="1">
+<stop offset="0%" stop-color="#e3e8ec"/><stop offset="100%" stop-color="#9aa5ad"/></linearGradient>
+
+</defs>
+<rect width="1024" height="1024" fill="url(#tile)"/><rect width="1024" height="1024" fill="url(#glare)"/>
+<ellipse cx="512" cy="900" rx="350" ry="30" fill="#000" opacity=".38"/>
+
+  <!-- base board -->
+  <path d="M 120 700 L 512 820 L 904 700 L 512 580 Z" fill="#000" opacity=".3" transform="translate(10 16)"/>
+  <path d="M 120 700 L 512 820 L 904 700 L 512 580 Z" fill="#8a6a44"/>
+  <path d="M 120 700 L 512 820 L 512 850 L 120 730 Z" fill="#5c4630"/>
+  <path d="M 904 700 L 512 820 L 512 850 L 904 730 Z" fill="#6f5439"/>
+  <!-- site: green -->
+  <path d="M 170 700 L 512 804 L 854 700 L 512 596 Z" fill="#8fa58b"/>
+  <!-- the tall block: isometric -->
+  <path d="M 380 640 L 380 300 L 512 340 L 512 680 Z" fill="#e3ddd0"/>
+  <path d="M 512 680 L 512 340 L 644 300 L 644 640 Z" fill="#c9c2b5"/>
+  <path d="M 380 300 L 512 260 L 644 300 L 512 340 Z" fill="#f4eede"/>
+  <path d="M402 340.666 L422 346.726 L422 374.726 L402 368.666 Z" fill="#7fa7c0"/><path d="M402 386.666 L422 392.726 L422 420.726 L402 414.666 Z" fill="#7fa7c0"/><path d="M402 432.666 L422 438.726 L422 466.726 L402 460.666 Z" fill="#7fa7c0"/><path d="M402 478.666 L422 484.726 L422 512.726 L402 506.666 Z" fill="#7fa7c0"/><path d="M402 524.6659999999999 L422 530.7259999999999 L422 558.7259999999999 L402 552.6659999999999 Z" fill="#7fa7c0"/><path d="M402 570.6659999999999 L422 576.7259999999999 L422 604.7259999999999 L402 598.6659999999999 Z" fill="#7fa7c0"/><path d="M436 350.968 L456 357.028 L456 385.028 L436 378.968 Z" fill="#7fa7c0"/><path d="M436 396.968 L456 403.028 L456 431.028 L436 424.968 Z" fill="#7fa7c0"/><path d="M436 442.968 L456 449.028 L456 477.028 L436 470.968 Z" fill="#7fa7c0"/><path d="M436 488.968 L456 495.028 L456 523.028 L436 516.9680000000001 Z" fill="#7fa7c0"/><path d="M436 534.9680000000001 L456 541.028 L456 569.028 L436 562.9680000000001 Z" fill="#7fa7c0"/><path d="M436 580.9680000000001 L456 587.028 L456 615.028 L436 608.9680000000001 Z" fill="#7fa7c0"/><path d="M470 361.27 L490 367.33 L490 395.33 L470 389.27 Z" fill="#7fa7c0"/><path d="M470 407.27 L490 413.33 L490 441.33 L470 435.27 Z" fill="#7fa7c0"/><path d="M470 453.27 L490 459.33 L490 487.33 L470 481.27 Z" fill="#7fa7c0"/><path d="M470 499.27 L490 505.33 L490 533.3299999999999 L470 527.27 Z" fill="#7fa7c0"/><path d="M470 545.27 L490 551.3299999999999 L490 579.3299999999999 L470 573.27 Z" fill="#7fa7c0"/><path d="M470 591.27 L490 597.3299999999999 L490 625.3299999999999 L470 619.27 Z" fill="#7fa7c0"/>
+  <path d="M534 367.334 L554 361.274 L554 389.274 L534 395.334 Z" fill="#5b7f96"/><path d="M534 413.334 L554 407.274 L554 435.274 L534 441.334 Z" fill="#5b7f96"/><path d="M534 459.334 L554 453.274 L554 481.274 L534 487.334 Z" fill="#5b7f96"/><path d="M534 505.334 L554 499.274 L554 527.2740000000001 L534 533.3340000000001 Z" fill="#5b7f96"/><path d="M534 551.3340000000001 L554 545.2740000000001 L554 573.2740000000001 L534 579.3340000000001 Z" fill="#5b7f96"/><path d="M534 597.3340000000001 L554 591.2740000000001 L554 619.2740000000001 L534 625.3340000000001 Z" fill="#5b7f96"/><path d="M568 357.032 L588 350.972 L588 378.972 L568 385.032 Z" fill="#5b7f96"/><path d="M568 403.032 L588 396.972 L588 424.972 L568 431.032 Z" fill="#5b7f96"/><path d="M568 449.032 L588 442.972 L588 470.972 L568 477.032 Z" fill="#5b7f96"/><path d="M568 495.032 L588 488.972 L588 516.972 L568 523.0319999999999 Z" fill="#5b7f96"/><path d="M568 541.0319999999999 L588 534.972 L588 562.972 L568 569.0319999999999 Z" fill="#5b7f96"/><path d="M568 587.0319999999999 L588 580.972 L588 608.972 L568 615.0319999999999 Z" fill="#5b7f96"/><path d="M602 346.73 L622 340.67 L622 368.67 L602 374.73 Z" fill="#5b7f96"/><path d="M602 392.73 L622 386.67 L622 414.67 L602 420.73 Z" fill="#5b7f96"/><path d="M602 438.73 L622 432.67 L622 460.67 L602 466.73 Z" fill="#5b7f96"/><path d="M602 484.73 L622 478.67 L622 506.67 L602 512.73 Z" fill="#5b7f96"/><path d="M602 530.73 L622 524.6700000000001 L622 552.6700000000001 L602 558.73 Z" fill="#5b7f96"/><path d="M602 576.73 L622 570.6700000000001 L622 598.6700000000001 L602 604.73 Z" fill="#5b7f96"/>
+  <!-- the low wing -->
+  <path d="M 644 640 L 644 520 L 790 476 L 790 596 Z" fill="#c9c2b5"/>
+  <path d="M 644 520 L 512 480 L 658 436 L 790 476 Z" fill="#f4eede"/>
+  <path d="M664 543.94 L686 537.274 L686 567.274 L664 573.94 Z" fill="#5b7f96"/><path d="M700 533.0319999999999 L722 526.3659999999999 L722 556.3659999999999 L700 563.0319999999999 Z" fill="#5b7f96"/><path d="M736 522.124 L758 515.458 L758 545.458 L736 552.124 Z" fill="#5b7f96"/>
+  <!-- trees -->
+  <circle cx="250" cy="690" r="22" fill="#5b7358"/><rect x="247" y="690" width="6" height="32" fill="#3a2a10"/><circle cx="300" cy="720" r="18" fill="#5b7358"/><rect x="297" y="720" width="6" height="28" fill="#3a2a10"/><circle cx="760" cy="720" r="20" fill="#5b7358"/><rect x="757" y="720" width="6" height="30" fill="#3a2a10"/><circle cx="700" cy="760" r="16" fill="#5b7358"/><rect x="697" y="760" width="6" height="26" fill="#3a2a10"/>
+  <!-- the cars, tiny -->
+  <rect x="560" y="740" width="26" height="12" rx="4" fill="#c2482e" transform="rotate(17 573 746)"/>
+  <rect x="600" y="752" width="26" height="12" rx="4" fill="#f4eede" transform="rotate(17 613 758)"/>
+  <!-- brass plaque -->
+  <rect x="440" y="790" width="144" height="28" rx="6" fill="url(#brassy)" transform="rotate(17 512 804)"/>
+  
+</svg>
