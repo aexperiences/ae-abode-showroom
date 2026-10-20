@@ -1,0 +1,16 @@
+{
+ "about": "Icon skins for this system \u2014 the Icon Skin Machine, Accelerated Experiences LLC, Oct 20 2026. House (the drawn library) is the default and is not listed.",
+ "system": "abode",
+ "sets": [
+  {
+   "k": "porcelain",
+   "name": "Porcelain",
+   "note": "ivory, brass and crimson \u00b7 sculpted"
+  },
+  {
+   "k": "paperworks",
+   "name": "Paperworks",
+   "note": "cut paper \u00b7 forest, terracotta, mustard"
+  }
+ ]
+}
