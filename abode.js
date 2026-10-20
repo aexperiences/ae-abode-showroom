@@ -377,17 +377,22 @@
   var DEPTS = [
     { group:"Command", items:[
       { href:"dashboard.html",    label:"Command Center",          ic:"◎" }, { href:"calendar.html", label:"Calendar", ic:"▤" }, { href:"contacts.html", label:"Contacts", ic:"☎" }, { href:"connect.html", label:"Connect · Video", ic:"◉" }, { href:"records.html", label:"Records · Filing", ic:"▤" },
-      { href:"approvals.html",    label:"Approval Desk",           ic:"✓", accent:"ops" }
+      { href:"approvals.html",    label:"Approval Desk",           ic:"✓", accent:"ops" },
+      { href:"masterlist.html",   label:"Master List",             ic:"✎" }
     ]},
     { group:"Front Office", items:[
-      { href:"leadgen.html",      label:"Lead Gen · Front Office", ic:"✦", room:"leadgen",   accent:"leadgen" }
+      { href:"leadgen.html",      label:"Lead Gen · Front Office", ic:"✦", room:"leadgen",   accent:"leadgen" },
+      { href:"mail.html",         label:"Mail",                    ic:"✉" }
     ]},
     { group:"Sales", items:[
       { href:"crm.html",          label:"CRM · Pipelines",         ic:"◈", room:"crm",       accent:"crm" },
-      { href:"listings.html",     label:"Listings · Inventory",    ic:"⌂", room:"listings",  accent:"listings" }
+      { href:"listings.html",     label:"Listings · Inventory",    ic:"⌂", room:"listings",  accent:"listings" },
+      { href:"aimos.html",        label:"Sign Room",               ic:"▦" }
     ]},
     { group:"Transactions", items:[
-      { href:"transactions.html", label:"Transactions · Compliance", ic:"⇄", room:"transactions", accent:"txn" }
+      { href:"transactions.html", label:"Transactions · Compliance", ic:"⇄", room:"transactions", accent:"txn" },
+      { href:"documents.html",    label:"Documents",               ic:"▤" },
+      { href:"sign.html",         label:"e-Sign",                  ic:"✍" }
     ]},
     { group:"Money", items:[
       { href:"commissions.html",  label:"Commissions · Accounting", ic:"▦", room:"commissions", accent:"money" },
@@ -403,6 +408,10 @@
     { group:"Governance", items:[
       { href:"law.html",          label:"Law · Contracts",         ic:"⚖", room:"law",       accent:"law" },
       { href:"it.html",           label:"IT · System Health",      ic:"♥", room:"it",        accent:"it" }
+    ]},
+    { group:"The House", items:[
+      { href:"manual.html",       label:"Owner's Manual",          ic:"?" },
+      { href:"skins.html",        label:"Skins",                   ic:"◐" }
     ]},
     { group:"The Org", items:[
       { href:"org.html",          label:"Agent Org · Bus",         ic:"❖", room:"org",       accent:"ops" }
