@@ -1,131 +1,84 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Abode OS · Real Estate Brokerage OS</title>
-<meta name="description" content="Abode OS — the operating system for a real estate brokerage. Powered by Accelerated Experiences LLC.">
-<link rel="icon" href="https://www.aexperiences.com/Abode_OS.png">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,500;9..144,600&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="abode.css">
-<link rel="canonical" href="https://www.aexperiences.com/apps/abode/">
-<meta property="og:type" content="website">
-<meta property="og:site_name" content="Accelerated Experiences LLC">
-<meta property="og:title" content="Abode OS — Real estate brokerage OS">
-<meta property="og:description" content="Run a real-estate practice from one place — listings, clients, calendar, and the paperwork that follows a deal.">
-<meta property="og:url" content="https://www.aexperiences.com/apps/abode/">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Abode OS — the operating system for a real estate brokerage</title>
+<meta name="description" content="Abode OS runs a real estate brokerage end to end: lead gen, a scored CRM, listings, the transaction and compliance gate, commissions with splits and caps, company dollar, analytics and recruiting. A white-label build by Accelerated Experiences LLC.">
+<link rel="canonical" href="https://aexperiences.studio/apps/abode/">
+<meta property="og:title" content="Abode OS — real estate brokerage operating system">
+<meta property="og:description" content="Leads, listings, the deal file, the compliance gate and the commission money, with the broker seeing the firm and each agent seeing only their own book. Walk in and use it.">
 <meta property="og:image" content="https://www.aexperiences.com/Abode_OS.png">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://aexperiences.studio/apps/abode/">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Abode OS — Real estate brokerage OS">
-<meta name="twitter:description" content="Run a real-estate practice from one place — listings, clients, calendar, and the paperwork that follows a deal.">
-<meta name="twitter:image" content="https://www.aexperiences.com/Abode_OS.png">
+<link rel="icon" href="https://www.aexperiences.com/Abode_OS.png">
+<link rel="apple-touch-icon" href="https://www.aexperiences.com/Abode_OS.png">
+<meta name="theme-color" content="#c8794f">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700&display=swap">
+<style>
+  :root{--card:#fffaf0;--sunk:#f4ecdc;--line:#e4d7bc;--ink:#211a14;--ink-2:#3d3128;--mut:#7a6d5e;--acc:#c8794f}
+  *{box-sizing:border-box}
+  body,.lede,.gf h3,.gf p,.gfoot,.alt a{font-variant-ligatures:none;font-feature-settings:"liga" 0,"calt" 0}
+  body{margin:0;font-family:"Manrope",system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--ink);background:linear-gradient(165deg,#55616f,#39434f 60%,#272e36);-webkit-font-smoothing:antialiased}
+  .gate{min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:34px max(16px,env(safe-area-inset-right,0px)) 34px max(16px,env(safe-area-inset-left,0px))}
+  .gcard{max-width:940px;width:100%;background:var(--card);border-radius:20px;overflow:hidden;box-shadow:0 40px 90px -30px rgba(0,0,0,.55)}
+  .gtop{display:flex;gap:18px;align-items:center;padding:30px 34px 24px;border-bottom:1px solid var(--line)}
+  .gtop img{width:74px;height:74px;border-radius:17px;display:block;flex:none}
+  .gtop h1{margin:0;font-size:27px;letter-spacing:-.01em;color:var(--ink);font-weight:700}
+  .gtop p{margin:5px 0 0;font-size:14px;color:var(--mut)}
+  .gbody{padding:26px 34px 30px}
+  .lede{font-size:16.5px;line-height:1.65;color:var(--ink-2);margin:0 0 22px;max-width:66ch}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-bottom:24px}
+  .gf{min-width:0}
+  .gf h3{margin:0 0 5px;font-size:13.5px;color:var(--ink)}
+  .gf p{margin:0;font-size:12.8px;line-height:1.55;color:var(--mut)}
+  .enter{display:inline-flex;align-items:center;gap:9px;background:var(--acc);color:#fff;border:none;padding:15px 26px;border-radius:12px;font-size:16px;font-weight:600;text-decoration:none;cursor:pointer}
+  .enter:hover{filter:brightness(.92)}
+  .enter:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+  .alt{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+  .alt a{font-size:13px;color:var(--ink-2);text-decoration:none;border:1px solid var(--line);border-radius:9px;padding:9px 14px;background:var(--card)}
+  .alt a:hover{border-color:var(--acc);color:var(--acc)}
+  .gfoot{padding:16px 34px;background:var(--sunk);font-size:12px;color:var(--mut);line-height:1.6}
+  .gfoot b{color:var(--ink-2)}
+  @media(max-width:760px){.gtop{padding:22px 20px 18px;gap:13px}.gtop img{width:56px;height:56px}.gtop h1{font-size:21px}.gbody{padding:20px}.grid3{grid-template-columns:1fr;gap:14px}.gfoot{padding:14px 20px}.enter{width:100%;justify-content:center}}
+  @media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
 </head>
 <body>
-
-<div class="gate-wrap">
-  <main style="width:100%;max-width:730px">
-
-    <section class="card" style="padding:34px 36px 0;border-radius:20px;box-shadow:var(--sh-lg);margin-bottom:0">
-
-      <!-- mark + wordmark -->
-      <div class="row" style="gap:13px;align-items:center">
-        <div class="bmark" style="width:46px;height:46px">
-          <img src="https://www.aexperiences.com/Abode_OS.png" alt="Abode OS"
-               style="width:100%;height:100%;object-fit:cover;border-radius:inherit;display:block"
-               onerror="this.style.display='none';this.parentNode.classList.add('fallback')">
-          <svg class="fallback-mark" viewBox="0 0 32 32" width="28" height="28" style="display:none" aria-hidden="true">
-            <g fill="none" stroke="#fff" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round">
-            <path d="M4 15 L16 5 L28 15"/><path d="M7 13 V27 H25 V13"/><path d="M13 27 V19 H19 V27"/></g>
-          </svg>
-        </div>
-        <div>
-          <div style="font-family:var(--serif);font-size:22px;font-weight:600;letter-spacing:-.01em;line-height:1.15">Abode OS</div>
-          <div class="muted mono" style="font-size:10px;letter-spacing:.14em;text-transform:uppercase;margin-top:2px">Real Estate Brokerage OS</div>
-        </div>
-        <span class="spacer"></span>
-        <span class="tag mono ghost">SHOWROOM</span>
-      </div>
-
-      <div class="divider" style="margin:22px 0 20px"></div>
-
-      <!-- the pitch -->
-      <h1 style="font-family:var(--serif);font-weight:600;font-size:29px;letter-spacing:-.01em;line-height:1.18">The whole brokerage,<br>running as one system.</h1>
-      <p style="font-size:14.5px;color:var(--ink-2);line-height:1.65;margin-top:14px;max-width:62ch">
-        Abode OS is the operating system for a real estate brokerage — lead gen and the IDX sites, a
-        behavior-scored CRM, MLS-fed listings, the transaction &amp; broker-compliance gate, the commission
-        money spine with splits and caps, analytics, recruiting, and a ten-department agent org routing
-        underneath all of it.
-      </p>
-
-      <div class="fence brass" style="margin-top:18px">
-        <b>Multi-tier by design.</b> An agent sees only their own book. A team lead sees the team. The managing
-        broker sees the whole firm's transactions, compliance log and financials. One system, three scopes —
-        no app-switching, and no tuition-style cut of your commissions.
-      </div>
-
-      <!-- what this actually is -->
-      <div class="fence" style="margin-top:14px">
-        <b>This is the real hub, not a slideshow.</b> It runs entirely in your browser. Everything you type stays
-        in this tab, nothing is uploaded, and the floor resets when you leave. Nothing here sends, spends,
-        publishes or moves money — anything that would is staged on the Approval Desk instead.
-      </div>
-
-      <!-- what's inside -->
-      <div style="margin-top:24px">
-        <label class="f">The departments inside</label>
-        <div class="row" style="gap:6px">
-          <span class="tag">Lead Gen &amp; Front Office</span>
-          <span class="tag">CRM &amp; Pipelines</span>
-          <span class="tag">Listings &amp; Inventory</span>
-          <span class="tag">Transactions &amp; Compliance</span>
-          <span class="tag">Commissions &amp; Accounting</span>
-          <span class="tag">Books &amp; Metrics</span>
-          <span class="tag">Brokerage Analytics</span>
-          <span class="tag">Recruiting &amp; Growth</span>
-          <span class="tag">HR · People Ops</span>
-          <span class="tag">IT · System Health</span>
-          <span class="tag">Law · Contracts &amp; Compliance</span>
-        </div>
-        <p class="muted small" style="margin-top:10px;line-height:1.55">
-          Each one is a five-seat chain — department head, administrative executive, pacemaker, and two opposing
-          lenses — gated on a confidence bar before anything is released. Harper, the COO, routes and packages;
-          she does not do the work.
-        </p>
-      </div>
-
-      <!-- the door -->
-      <div class="divider" style="margin:24px 0 20px"></div>
-      <div class="row" style="gap:14px">
-        <a class="btn green" href="dashboard.html" id="enter" style="padding:13px 24px;font-size:14px">
-          Enter the brokerage &rarr;
-        </a>
-        <span class="muted small" style="max-width:34ch;line-height:1.5">
-          Opens on the full Brokerage build with every department switched on. Take any of them off from the
-          tier pill inside.
-        </span>
-      </div>
-
-      <!-- credit -->
-      <div class="ae-credit" style="margin:26px -36px 0;padding:16px 36px 22px">
-        <a href="https://www.aexperiences.com/" class="ae-triad" aria-label="AOS — Accelerated Experiences LLC"><img src="/marks/aos-badge.png" alt="AOS — Accelerated Operating Systems" style="height:30px;width:auto;vertical-align:middle"></a><br>Abode OS is a white-label build.
-        Demo data is a fictional brokerage; benchmark figures are sourced or shown blank.
-      </div>
-
-    </section>
-
-  </main>
-</div>
-
+<div class="gate"><div class="gcard">
+  <div class="gtop">
+    <img src="https://www.aexperiences.com/Abode_OS.png" alt="Abode OS">
+    <div><h1>Abode OS</h1><p>The operating system for a real estate brokerage</p></div>
+  </div>
+  <div class="gbody">
+    <p class="lede">A brokerage does not run on a calendar. It runs on deal files — where one missing disclosure holds a closing, where the commission splits three ways before it reaches anyone, and where the managing broker is on the hook for every agent&#x27;s paperwork. Abode OS is built around that: the file, the gate, and the money, with every seat seeing exactly its own book.</p>
+    <div class="grid3">
+      <div class="gf"><h3>The compliance gate</h3><p>A transaction cannot clear to close until every file document is in and reviewed. Kicked-back documents sit on the home screen until somebody fixes them.</p></div>
+      <div class="gf"><h3>One system, three scopes</h3><p>An agent sees only their own book. A team lead sees the team. The managing broker sees the whole firm&#x27;s transactions, compliance log and financials — no app-switching.</p></div>
+      <div class="gf"><h3>A CRM that scores behavior</h3><p>Leads ranked on what they actually do, with the hot ones to call first. Lead gen and the IDX sites feed it; nothing is retyped.</p></div>
+      <div class="gf"><h3>Commissions, splits and caps</h3><p>The commission spine computes every split and every cap, and the company dollar room shows what the brokerage keeps and what agents owe in desk fees.</p></div>
+      <div class="gf"><h3>Listings that watch the clock</h3><p>Active listings against days on market, so the one past sixty days is a line on the home screen, not a surprise at the sales meeting.</p></div>
+      <div class="gf"><h3>No cut of your commissions</h3><p>One flat license for the brokerage. It does not cost more when you add an agent, and it never takes a slice of a closing.</p></div>
+    </div>
+    <a class="enter" id="enter" href="dashboard.html">Walk in and use it &rarr;</a>
+    <div class="alt">
+      <a href="transactions.html">Clear a file to close</a>
+      <a href="leadgen.html">Call the hot lead</a>
+      <a href="commissions.html">See the commission split</a>
+      <a href="books.html">Who owes desk fees</a>
+      <a href="recruiting.html">Recruit an agent</a>
+    </div>
+  </div>
+  <div class="gfoot">
+    This is the real system running in your browser, not a slideshow — everything you type stays on your device and
+    nothing is uploaded. It opens on a realistic sample brokerage; the ribbon at the top clears it so you can enter your own.
+    <b>Abode OS is a white-label build by Accelerated Experiences LLC.</b>
+    Nothing here is legal, tax or licensing advice.
+  </div>
+</div></div>
 <script src="abode.js"></script>
-<script>
-(function () {
-  var A = window.Abode;
-  var a = document.getElementById("enter");
-  if (!a || !A) return;
-  a.addEventListener("click", function () { A.resetFloor(); });
-})();
-</script>
+<script>(function(){var E=window.Abode;var a=document.getElementById("enter");if(a&&E&&E.resetFloor)a.addEventListener("click",function(){E.resetFloor();});})();</script>
 </body>
 </html>
