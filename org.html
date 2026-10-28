@@ -121,7 +121,7 @@
       '<h2>The chain, top to bottom</h2>' +
       '<div class="card-sub">Broker-Owner → COO → DH → AE → Event Bus → Pacemaker → Triad. ' +
       'The order is the point: a conclusion cannot skip a rung, and every rung leaves a record.</div>' +
-    '</div><div>' + A.tag(A.money(A.ROOMS.org.mo) + "/mo · " + A.money(A.ROOMS.org.build) + " white-label build · draft", "ghost") + '</div></div>' +
+    '</div><div>' + A.tag(A.money(A.ROOMS.org.mo) + "/mo" + (A.ROOMS.org.build ? " · " + A.money(A.ROOMS.org.build) + " white-label build" : "") + " · draft", "ghost") + '</div></div>' +
     '<div class="statrow" style="margin-bottom:14px">' +
       A.stat("Departments", DEPTS.length, "Each one a full five-seat chain") +
       A.stat("Seats in the org", seatCount, "50 department seats + the COO") +
